@@ -1,23 +1,49 @@
 import { Telegraf } from 'telegraf';
 import dotenv from 'dotenv';
-import { mainMenu } from './bot/keyboards/mainMenu';
-import { adminOnly } from './bot/keyboards/adminOnly';
+import { sayHello } from './bot/helpers/helpers';
+import { setupInfoHandlers } from './bot/handlers/infoHandler';
+import { adminCommands, mainCommands } from './bot/commands/commands';
 
 dotenv.config();
 
-const bot = new Telegraf(process.env.BOT_TOKEN!);
+const token = process.env.BOT_TOKEN!;
+const adminId = process.env.ADMIN_ID!;
 
-const admins = process.env.ADMINS?.split(',').map(id => Number(id.trim())) || [];
+const bot = new Telegraf(token);
 
-// Главное меню
+bot.start(sayHello());
+
+bot.telegram.setMyCommands(mainCommands, {
+  scope: { type: 'all_private_chats' },
+});
+
+bot.telegram.setMyCommands(adminCommands, {
+  scope: { type: 'chat', chat_id: adminId },
+});
+
+/* bot.telegram.setMyCommands(adminCommands, {
+  scope: { type: 'chat', chat_id: process.env.DEV_ID! },
+}); */
+
+setupInfoHandlers(bot, adminId);
+
+// Команда Информация
+/* bot.command('info', async ctx => {
+  await ctx.reply('Информация', infoButtons);
+}); */
+
+// bot.telegram.onText('about', sayHello());
+
+/* 
 bot.start(async ctx => {
   await ctx.reply('Добро пожаловать в фитнес-клуб', mainMenu());
 });
-
-// Команда для администратора
-bot.command('admin', adminOnly(admins), async ctx => {
+bot.command('info', adminOnly(admins), async ctx => {
   await ctx.reply('Админ-панель');
-});
+}); */
+
+// Запуск
+bot.launch();
 
 process.once('SIGINT', () => bot.stop('SIGINT'));
 process.once('SIGTERM', () => bot.stop('SIGTERM'));
