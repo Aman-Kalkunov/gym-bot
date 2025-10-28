@@ -1,19 +1,18 @@
-import { InfoButtons } from '../../types/buttonTypes';
+import { InfoButtons, InfoButtonsText } from '../../types/buttonTypes';
 import { Markup } from 'telegraf';
 
 export const infoButtons = Markup.inlineKeyboard([
   [
-    Markup.button.callback('О нас', InfoButtons.INFO_ABOUT),
-    Markup.button.callback('Расписание', InfoButtons.INFO_TIMETABLE),
+    Markup.button.callback(InfoButtonsText.INFO_ABOUT, InfoButtons.INFO_ABOUT),
+    Markup.button.callback(InfoButtonsText.INFO_TIMETABLE, InfoButtons.INFO_TIMETABLE),
   ],
   [
-    Markup.button.callback('Стоимость занятий', InfoButtons.INFO_PRICE),
-    Markup.button.callback('Первая тренировка', InfoButtons.INFO_FIRST_TIME),
+    Markup.button.callback(InfoButtonsText.INFO_PRICE, InfoButtons.INFO_PRICE),
+    Markup.button.callback(InfoButtonsText.INFO_FIRST_TIME, InfoButtons.INFO_FIRST_TIME),
   ],
   [
-    Markup.button.callback('Акции', InfoButtons.INFO_PROMOTIONS),
-    Markup.button.callback('Контакты', InfoButtons.INFO_CONTACTS),
+    Markup.button.callback(InfoButtonsText.INFO_PROMOTIONS, InfoButtons.INFO_PROMOTIONS),
+    Markup.button.callback(InfoButtonsText.INFO_CONTACTS, InfoButtons.INFO_CONTACTS),
   ],
-  [Markup.button.callback('Задать вопрос', InfoButtons.INFO_QUESTION)],
-  // [Markup.button.callback('Назад', InfoButtons.INFO_BACK)],
+  [Markup.button.callback(InfoButtonsText.INFO_QUESTION, InfoButtons.INFO_QUESTION)],
 ]);

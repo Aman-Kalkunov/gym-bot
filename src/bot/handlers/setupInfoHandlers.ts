@@ -1,21 +1,14 @@
 import { Telegraf, Context } from 'telegraf';
 import { infoButtons } from '../keyboards/infoButtons';
 import { InfoButtons } from '../../types/buttonTypes';
-import {
-  contactsText,
-  firstTimeText,
-  priceText,
-  promotionsText,
-  questionText,
-  startText,
-} from '../../constants/text/text';
+import { mainInfoText, messageText } from '../../constants/text/text';
 import { getUserName } from '../helpers/helpers';
 
 const waitingForQuestion = new Map<number, NodeJS.Timeout>();
 
 export const setupInfoHandlers = (bot: Telegraf<Context>, adminId: string) => {
   bot.command('info', async ctx => {
-    await ctx.reply('Информация', infoButtons);
+    await ctx.reply(messageText.information, infoButtons);
   });
 
   const safeEdit = async (ctx: Context, text: string, extra?: any) => {
@@ -29,19 +22,19 @@ export const setupInfoHandlers = (bot: Telegraf<Context>, adminId: string) => {
 
   bot.action(InfoButtons.INFO_ABOUT, async ctx => {
     await ctx.answerCbQuery();
-    await safeEdit(ctx, startText, {
+    await safeEdit(ctx, mainInfoText.startText, {
       ...infoButtons,
     });
   });
 
   bot.action(InfoButtons.INFO_PROMOTIONS, async ctx => {
     await ctx.answerCbQuery();
-    await safeEdit(ctx, promotionsText, infoButtons);
+    await safeEdit(ctx, mainInfoText.promotionsText, infoButtons);
   });
 
   bot.action(InfoButtons.INFO_CONTACTS, async ctx => {
     await ctx.answerCbQuery();
-    await safeEdit(ctx, contactsText, infoButtons);
+    await safeEdit(ctx, mainInfoText.contactsText, infoButtons);
   });
 
   bot.action(InfoButtons.INFO_TIMETABLE, async ctx => {
@@ -50,7 +43,7 @@ export const setupInfoHandlers = (bot: Telegraf<Context>, adminId: string) => {
     await ctx.replyWithPhoto(
       { source: './src/assets/timetable.jpg' },
       {
-        caption: 'Расписание',
+        caption: messageText.schedule,
         ...infoButtons,
       },
     );
@@ -62,7 +55,7 @@ export const setupInfoHandlers = (bot: Telegraf<Context>, adminId: string) => {
     await ctx.replyWithPhoto(
       { source: './src/assets/price.jpg' },
       {
-        caption: priceText,
+        caption: mainInfoText.priceText,
         ...infoButtons,
       },
     );
@@ -74,7 +67,7 @@ export const setupInfoHandlers = (bot: Telegraf<Context>, adminId: string) => {
     await ctx.replyWithPhoto(
       { source: './src/assets/firstTime.jpg' },
       {
-        caption: firstTimeText,
+        caption: mainInfoText.firstTimeText,
         ...infoButtons,
       },
     );
@@ -95,7 +88,7 @@ export const setupInfoHandlers = (bot: Telegraf<Context>, adminId: string) => {
     waitingForQuestion.set(userId, timer);
 
     await ctx.answerCbQuery();
-    await safeEdit(ctx, questionText);
+    await safeEdit(ctx, mainInfoText.questionText);
 
     bot.hears(/.*/, async ctx => {
       const userId = ctx.from.id;
@@ -108,12 +101,12 @@ export const setupInfoHandlers = (bot: Telegraf<Context>, adminId: string) => {
       const text = ctx.message.text.trim();
       const userName = getUserName(ctx.from);
 
-      await ctx.telegram.sendMessage(adminId, `Вопрос от ${userName}:\n\n${text}`);
+      await ctx.telegram.sendMessage(adminId, `${messageText.question} ${userName}:\n\n${text}`);
 
       clearTimeout(timer);
       waitingForQuestion.delete(userId);
 
-      await ctx.reply('Спасибо! Ваш вопрос отправлен администратору.');
+      await ctx.reply(messageText.answer);
     });
   });
 

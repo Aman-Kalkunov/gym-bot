@@ -9,6 +9,8 @@
     "start": "node dist/index.js",
     "prisma:generate": "prisma generate",
     "prisma:push": "prisma db push",
+    "prisma:update": "npm run prisma:generate && npm run prisma:push",
+    "prisma:reset": "rimraf prisma/dev.db && npm run prisma:update",
     "prisma:studio": "prisma studio"
   },
   "keywords": [],
@@ -16,7 +18,9 @@
   "license": "ISC",
   "dependencies": {
     "@prisma/client": "^6.17.1",
+    "date-fns": "^4.1.0",
     "dotenv": "^17.2.3",
+    "node-cron": "^4.2.1",
     "telegraf": "^4.16.3"
   },
   "devDependencies": {
@@ -29,6 +33,7 @@
     "nodemon": "^3.1.10",
     "prettier": "^3.6.2",
     "prisma": "^6.17.1",
+    "rimraf": "^6.0.1",
     "ts-node": "^10.9.2",
     "typescript": "^5.9.3"
   }

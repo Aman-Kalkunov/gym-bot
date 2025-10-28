@@ -13,29 +13,23 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-model Training {
-  id        String   @id @default(cuid())
-  type      String
-  day       Int
+model CrossfitTraining {
+  id        Int      @id @default(autoincrement())
+  date      DateTime
+  dayOfWeek Int
   time      String
-  capacity  Int?
-  booked    Int?     @default(0)
-  users     UserTraining[]
+  capacity  Int
+  booked    Int      @default(0)
+  users     Booking[]
 }
 
-model User {
-  id        String   @id @default(cuid())
-  telegramId Int      @unique
-  fullName  String
-  username  String?
-  bookings  UserTraining[]
-}
-
-model UserTraining {
-  id          String   @id @default(cuid())
-  userId      String
-  trainingId  String
-  user        User      @relation(fields: [userId], references: [id])
-  training    Training  @relation(fields: [trainingId], references: [id])
+model Booking {
+  id          Int      @id @default(autoincrement())
+  userId      Int
+  userName    String
+  userNick    String?
+  trainingId  Int
+  training    CrossfitTraining  @relation(fields: [trainingId], references: [id])
+  createdAt   DateTime  @default(now())
 }
 
