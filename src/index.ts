@@ -1,7 +1,12 @@
 import { Telegraf } from 'telegraf';
 import dotenv from 'dotenv';
+
+import { prisma } from './db';
 import { sayHello } from './bot/helpers/helpers';
-import { setupInfoHandlers } from './bot/handlers/infoHandler';
+import { initCrossfitSchedule } from './bot/helpers/initCrossfitSchedule';
+import { setupCrossfitAutoUpdate } from './bot/helpers/scheduleMaintenance';
+import { setupInfoHandlers } from './bot/handlers/setupInfoHandlers';
+import { setupScheduleHandlers } from './bot/handlers/setupScheduleHandlers';
 import { adminCommands, mainCommands } from './bot/commands/commands';
 
 dotenv.config();
@@ -26,24 +31,31 @@ bot.telegram.setMyCommands(adminCommands, {
 }); */
 
 setupInfoHandlers(bot, adminId);
+setupScheduleHandlers(bot);
 
-// Команда Информация
-/* bot.command('info', async ctx => {
-  await ctx.reply('Информация', infoButtons);
-}); */
+(async () => {
+  try {
+    await prisma.$connect();
+    console.log('Подключено к БД');
 
-// bot.telegram.onText('about', sayHello());
+    await initCrossfitSchedule();
+    console.log('Расписание инициализировано');
 
-/* 
-bot.start(async ctx => {
-  await ctx.reply('Добро пожаловать в фитнес-клуб', mainMenu());
+    setupCrossfitAutoUpdate();
+    console.log('Ежедневное обновление расписания запущено');
+
+    await bot.launch();
+  } catch (error) {
+    console.error('Ошибка при запуске:', error);
+    process.exit(1);
+  }
+})();
+
+process.once('SIGINT', () => {
+  bot.stop('SIGINT');
+  prisma.$disconnect();
 });
-bot.command('info', adminOnly(admins), async ctx => {
-  await ctx.reply('Админ-панель');
-}); */
-
-// Запуск
-bot.launch();
-
-process.once('SIGINT', () => bot.stop('SIGINT'));
-process.once('SIGTERM', () => bot.stop('SIGTERM'));
+process.once('SIGTERM', () => {
+  bot.stop('SIGTERM');
+  prisma.$disconnect();
+});
