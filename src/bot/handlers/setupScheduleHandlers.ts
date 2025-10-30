@@ -12,16 +12,13 @@ export const setupScheduleHandlers = (bot: Telegraf<Context>) => {
   });
 
   bot.action(ScheduleButtons.CROSS_FIT, async ctx => {
-    try {
-      await ctx.editMessageReplyMarkup(undefined);
-      await handleCrossfit(ctx);
-    } catch {
-      await handleCrossfit(ctx);
-    }
+    await handleCrossfit(ctx);
+    await ctx.answerCbQuery();
   });
 
   // Заглушка для Weightlifting
   bot.action(ScheduleButtons.WEIGHTLIFTING, async ctx => {
     await ctx.reply('Раздел для тяжёлой атлетики в разработке.');
+    await ctx.answerCbQuery();
   });
 };
