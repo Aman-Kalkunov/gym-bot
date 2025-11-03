@@ -1,4 +1,7 @@
 import { Context } from 'telegraf';
+import { format } from 'date-fns';
+import { ru } from 'date-fns/locale';
+
 import { mainInfoText } from '../../constants/text/text';
 import { User } from 'telegraf/typings/core/types/typegram';
 
@@ -27,4 +30,25 @@ export const getSlotWord = (count: number) => {
     return 'слота';
   }
   return 'слотов';
+};
+
+export const getPlacesWord = (count: number) => {
+  const mod10 = count % 10;
+  const mod100 = count % 100;
+
+  if (mod100 >= 11 && mod100 <= 14) {
+    return 'мест';
+  }
+  if (mod10 === 1) {
+    return 'место';
+  }
+  if (mod10 >= 2 && mod10 <= 4) {
+    return 'места';
+  }
+  return 'мест';
+};
+
+export const getFormatDate = (date: Date) => {
+  const formatted = format(new Date(date), 'EEEE, d MMMM', { locale: ru });
+  return formatted.charAt(0).toUpperCase() + formatted.slice(1);
 };
