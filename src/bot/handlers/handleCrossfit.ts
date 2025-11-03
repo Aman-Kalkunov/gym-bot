@@ -4,10 +4,10 @@ import { Markup } from 'telegraf';
 import { getFormatDate, getPlacesWord, getSlotWord } from '../helpers/helpers';
 import { prisma } from '../../db';
 import { messageText } from '../../constants/text/text';
-import { ITraining } from '../../types/training';
+import { ITraining, MessageType } from '../../types/training';
 import { crossfitTypes } from '../../types/crossfitTypes';
 
-export const handleCrossfit = async (ctx: Context, reply?: boolean) => {
+export const handleCrossfit = async (ctx: Context, messageType: MessageType) => {
   const now = new Date();
   const yesterday = new Date(now);
   yesterday.setDate(now.getDate() - 1);
@@ -45,12 +45,23 @@ export const handleCrossfit = async (ctx: Context, reply?: boolean) => {
   ]);
 
   buttons.push([Markup.button.callback('Назад', crossfitTypes.CROSS_FIT_DAY_BACK)]);
-  reply
-    ? await ctx.reply(messageText.selectDay, Markup.inlineKeyboard(buttons))
-    : await ctx.editMessageText(messageText.selectDay, Markup.inlineKeyboard(buttons));
+
+  if (messageType === 'reply') {
+    await ctx.reply(messageText.selectDay, Markup.inlineKeyboard(buttons));
+  } else {
+    try {
+      await ctx.editMessageText(messageText.selectDay, Markup.inlineKeyboard(buttons));
+    } catch {
+      await ctx.reply(messageText.selectDay, Markup.inlineKeyboard(buttons));
+    }
+  }
 };
 
-export const handleCrossfitDay = async (ctx: Context, dayOfWeek: number, reply?: boolean) => {
+export const handleCrossfitDay = async (
+  ctx: Context,
+  dayOfWeek: number,
+  messageType: MessageType,
+) => {
   const trainings: ITraining[] | null = await prisma.crossfitTraining.findMany({
     where: { dayOfWeek },
     orderBy: { time: 'asc' },
@@ -59,11 +70,11 @@ export const handleCrossfitDay = async (ctx: Context, dayOfWeek: number, reply?:
   if (!trainings?.length) {
     try {
       await ctx.editMessageText(messageText.noDayAvailable);
-      await handleCrossfit(ctx, true);
+      await handleCrossfit(ctx, 'reply');
     } catch (e) {
       console.error('Ошибка при обновлении клавиатуры:', e);
       await ctx.reply(messageText.noDayAvailable);
-      await handleCrossfit(ctx, true);
+      await handleCrossfit(ctx, 'reply');
     }
     return;
   }
@@ -80,9 +91,16 @@ export const handleCrossfitDay = async (ctx: Context, dayOfWeek: number, reply?:
   });
 
   buttons.push([Markup.button.callback('Назад', crossfitTypes.CROSS_FIT_TIME_BACK)]);
-  reply
-    ? await ctx.reply(messageText.selectTime, Markup.inlineKeyboard(buttons))
-    : await ctx.editMessageText(messageText.selectTime, Markup.inlineKeyboard(buttons));
+
+  if (messageType === 'reply') {
+    await ctx.reply(messageText.selectTime, Markup.inlineKeyboard(buttons));
+  } else {
+    try {
+      await ctx.editMessageText(messageText.selectTime, Markup.inlineKeyboard(buttons));
+    } catch {
+      await ctx.reply(messageText.selectTime, Markup.inlineKeyboard(buttons));
+    }
+  }
 };
 
 export const handleCrossfitTime = async (ctx: Context, trainingId: number) => {
@@ -105,11 +123,11 @@ export const handleCrossfitTime = async (ctx: Context, trainingId: number) => {
   if (free <= 0) {
     try {
       await ctx.editMessageText(messageText.full);
-      await handleCrossfitDay(ctx, training.dayOfWeek, true);
+      await handleCrossfitDay(ctx, training.dayOfWeek, 'reply');
     } catch (e) {
       console.error('Ошибка при обновлении клавиатуры:', e);
       await ctx.reply(messageText.full);
-      await handleCrossfitDay(ctx, training.dayOfWeek, true);
+      await handleCrossfitDay(ctx, training.dayOfWeek, 'reply');
     }
 
     return;
@@ -122,11 +140,11 @@ export const handleCrossfitTime = async (ctx: Context, trainingId: number) => {
   if (!!userBooking) {
     try {
       await ctx.editMessageText(`${messageText.alreadyBooked} (${getFormatDate(training.date)})`);
-      await handleCrossfit(ctx, true);
+      await handleCrossfit(ctx, 'reply');
     } catch (e) {
       console.error('Ошибка при обновлении клавиатуры:', e);
       await ctx.reply(messageText.alreadyBooked);
-      await handleCrossfit(ctx, true);
+      await handleCrossfit(ctx, 'reply');
     }
     return;
   }

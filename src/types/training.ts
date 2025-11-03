@@ -35,3 +35,5 @@ export interface IBooking {
   training: ITraining;
   createdAt: Date;
 }
+
+export type MessageType = 'reply' | 'edit';

@@ -12,7 +12,7 @@ export const setupScheduleHandlers = (bot: Telegraf<Context>) => {
   });
 
   bot.action(ScheduleButtons.CROSS_FIT, async ctx => {
-    await handleCrossfit(ctx);
+    await handleCrossfit(ctx, 'edit');
     await ctx.answerCbQuery();
   });
 

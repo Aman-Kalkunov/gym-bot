@@ -1,12 +1,13 @@
-import { prisma } from '../../db';
 import { Markup } from 'telegraf';
 import { Context } from 'telegraf';
+
+import { prisma } from '../../db';
 import { getFormatDate } from '../helpers/helpers';
 import { crossfitTypes } from '../../types/crossfitTypes';
 import { messageText } from '../../constants/text/text';
-import { IBooking } from '../../types/training';
+import { IBooking, MessageType } from '../../types/training';
 
-export const handleMyBookings = async (ctx: Context, reply?: boolean) => {
+export const handleMyBookings = async (ctx: Context, messageType: MessageType) => {
   const user = ctx.from;
   if (!user) {
     return;
@@ -34,9 +35,15 @@ export const handleMyBookings = async (ctx: Context, reply?: boolean) => {
     ];
   });
 
-  !reply
-    ? await ctx.reply(messageText.yourBookings, Markup.inlineKeyboard(buttons))
-    : await ctx.editMessageText(messageText.yourBookings, Markup.inlineKeyboard(buttons));
+  if (messageType === 'reply') {
+    await ctx.reply(messageText.yourBookings, Markup.inlineKeyboard(buttons));
+  } else {
+    try {
+      await ctx.editMessageText(messageText.yourBookings, Markup.inlineKeyboard(buttons));
+    } catch {
+      ctx.reply(messageText.yourBookings, Markup.inlineKeyboard(buttons));
+    }
+  }
 };
 
 export const handleBookingInfo = async (ctx: Context, bookingId: number) => {
@@ -48,11 +55,11 @@ export const handleBookingInfo = async (ctx: Context, bookingId: number) => {
   if (!booking) {
     try {
       await ctx.editMessageText(messageText.bookingNotFund);
-      await handleMyBookings(ctx, true);
+      await handleMyBookings(ctx, 'reply');
     } catch (e) {
       console.error(messageText.keyboardError, e);
       await ctx.reply(messageText.bookingNotFund);
-      await handleMyBookings(ctx, true);
+      await handleMyBookings(ctx, 'reply');
     }
     return;
   }
@@ -83,11 +90,11 @@ export const handleCancelBooking = async (ctx: Context, bookingId: number) => {
   if (!booking) {
     try {
       await ctx.editMessageText(messageText.bookingNotFund);
-      await handleMyBookings(ctx, true);
+      await handleMyBookings(ctx, 'reply');
     } catch (e) {
       console.error(messageText.keyboardError, e);
       await ctx.reply(messageText.bookingNotFund);
-      await handleMyBookings(ctx, true);
+      await handleMyBookings(ctx, 'reply');
     }
     return;
   }

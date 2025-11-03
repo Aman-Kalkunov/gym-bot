@@ -1,5 +1,6 @@
 import { Telegraf } from 'telegraf';
 import dotenv from 'dotenv';
+
 import { prisma } from './db';
 import { sayHello } from './bot/helpers/helpers';
 import { initCrossfitSchedule } from './bot/helpers/initCrossfitSchedule';
@@ -77,7 +78,7 @@ bot.on('callback_query', async ctx => {
 
   try {
     if (data === crossfitTypes.CROSS_FIT_TIME_BACK) {
-      await handleCrossfit(ctx);
+      await handleCrossfit(ctx, 'edit');
       await ctx.answerCbQuery();
       return;
     }
@@ -89,7 +90,7 @@ bot.on('callback_query', async ctx => {
     }
 
     if (data === crossfitTypes.CROSS_FIT_MY_BACK) {
-      await handleMyBookings(ctx, true);
+      await handleMyBookings(ctx, 'edit');
       await ctx.answerCbQuery();
       return;
     }
@@ -101,7 +102,7 @@ bot.on('callback_query', async ctx => {
         return;
       }
 
-      await handleCrossfitDay(ctx, dayOfWeek);
+      await handleCrossfitDay(ctx, dayOfWeek, 'edit');
       await ctx.answerCbQuery();
       return;
     }
