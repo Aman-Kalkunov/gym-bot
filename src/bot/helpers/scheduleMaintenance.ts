@@ -1,13 +1,11 @@
 import cron from 'node-cron';
 import { prisma } from '../../db';
-import { CROSS_FIT_SCHEDULE } from '../../types/days';
-import { ITraining } from '../../types/training';
-import { CAPACITY as capacity } from '../../constants/crossfit/crossfitConstants';
+import { formatDate } from './helpers';
+import { ITraining, CROSS_FIT_SCHEDULE, CAPACITY as capacity } from '../../types/types';
 
 export const setupCrossfitAutoUpdate = () => {
   cron.schedule('0 22 * * *', async () => {
     const today = new Date();
-    today.setHours(0, 0, 0, 0);
 
     const tomorrow = new Date(today);
     tomorrow.setDate(today.getDate() + 1);
@@ -15,18 +13,18 @@ export const setupCrossfitAutoUpdate = () => {
     await prisma.booking.deleteMany({
       where: {
         training: {
-          date: { lte: today },
+          date: { lte: formatDate(today) },
         },
       },
     });
 
-    console.log('✅ Старые записи пользователей удалены');
+    console.log('Старые записи пользователей удалены');
 
     await prisma.crossfitTraining.deleteMany({
-      where: { date: { lt: tomorrow } },
+      where: { date: { lt: formatDate(tomorrow) } },
     });
 
-    console.log('✅ Старые тренировки удалены');
+    console.log('Старые тренировки удалены');
 
     const lastDateObj: ITraining | null = await prisma.crossfitTraining.findFirst({
       orderBy: { date: 'desc' },
@@ -46,12 +44,12 @@ export const setupCrossfitAutoUpdate = () => {
     if (times?.length) {
       times.map(async time => {
         await prisma.crossfitTraining.create({
-          data: { date: nextDate, dayOfWeek, time, capacity },
+          data: { date: formatDate(nextDate), dayOfWeek, time, capacity },
         });
       });
-      console.log(`✅ Добавлены тренировки на ${nextDate.toLocaleDateString('ru-RU')}`);
+      console.log(`Добавлены тренировки на ${nextDate.toLocaleDateString('ru-RU')}`);
     } else {
-      console.warn(`⚠️ Нет расписания для дня недели ${dayOfWeek}`);
+      console.warn(`Нет расписания для дня недели ${dayOfWeek}`);
     }
   });
 };

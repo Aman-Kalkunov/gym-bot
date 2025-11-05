@@ -1,4 +1,4 @@
-import { InfoButtons, InfoButtonsText } from '../../types/buttonTypes';
+import { crossfitTypes, crossfitTypesText, InfoButtons, InfoButtonsText } from '../../types/types';
 import { Markup } from 'telegraf';
 
 export const infoButtons = Markup.inlineKeyboard([
@@ -15,4 +15,5 @@ export const infoButtons = Markup.inlineKeyboard([
     Markup.button.callback(InfoButtonsText.INFO_CONTACTS, InfoButtons.INFO_CONTACTS),
   ],
   [Markup.button.callback(InfoButtonsText.INFO_QUESTION, InfoButtons.INFO_QUESTION)],
+  [Markup.button.callback(crossfitTypesText.CLOSE, crossfitTypes.CLOSE)],
 ]);

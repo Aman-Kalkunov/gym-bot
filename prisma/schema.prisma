@@ -9,7 +9,7 @@ datasource db {
 
 model CrossfitTraining {
   id        Int      @id @default(autoincrement())
-  date      DateTime
+  date      String
   dayOfWeek Int
   time      String
   capacity  Int
@@ -23,7 +23,7 @@ model Booking {
   userName    String
   userNick    String?
   trainingId  Int
-  training    CrossfitTraining  @relation(fields: [trainingId], references: [id])
+  training    CrossfitTraining  @relation(fields: [trainingId], references: [id], onDelete: Cascade)
   createdAt   DateTime  @default(now())
 }
 

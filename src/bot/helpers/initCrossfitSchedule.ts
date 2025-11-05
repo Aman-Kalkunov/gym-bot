@@ -1,6 +1,7 @@
 import { prisma } from '../../db';
-import { CROSS_FIT_SCHEDULE } from '../../types/days';
-import { CAPACITY as capacity } from '../../constants/crossfit/crossfitConstants';
+
+import { formatDate } from './helpers';
+import { CROSS_FIT_SCHEDULE, CAPACITY as capacity } from '../../types/types';
 
 export const initCrossfitSchedule = async () => {
   const count: number = await prisma.crossfitTraining.count();
@@ -9,19 +10,27 @@ export const initCrossfitSchedule = async () => {
     return;
   }
 
-  const now = new Date();
-  now.setHours(0, 0, 0, 0);
+  const today = new Date();
 
   for (let i = 0; i < 7; i++) {
-    const date = new Date(now);
-    date.setDate(now.getDate() + i);
-    const dayOfWeek = date.getDay();
+    const dateObj = new Date(today);
+    dateObj.setDate(today.getDate() + i);
+    const dayOfWeek = dateObj.getDay();
+
+    const dateStr = formatDate(dateObj);
     const times = CROSS_FIT_SCHEDULE[dayOfWeek];
 
-    times.map(async time => {
+    for (const time of times) {
       await prisma.crossfitTraining.create({
-        data: { date, dayOfWeek, time, capacity },
+        data: {
+          date: dateStr,
+          dayOfWeek,
+          time,
+          capacity,
+        },
       });
-    });
+    }
   }
+
+  console.log('Расписание инициализировано');
 };

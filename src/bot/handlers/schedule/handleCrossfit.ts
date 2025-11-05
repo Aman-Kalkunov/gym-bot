@@ -1,11 +1,15 @@
 import { Context } from 'telegraf';
 import { Markup } from 'telegraf';
 
-import { getFormatDate, getPlacesWord, getSlotWord } from '../helpers/helpers';
-import { prisma } from '../../db';
-import { messageText } from '../../constants/text/text';
-import { ITraining, MessageType } from '../../types/training';
-import { crossfitTypes } from '../../types/crossfitTypes';
+import { formatDate, getFormatDate, getPlacesWord, getSlotWord } from '../../helpers/helpers';
+import { prisma } from '../../../db';
+import {
+  MessageType,
+  ITraining,
+  crossfitTypes,
+  crossfitTypesText,
+  AdminButtonsText,
+} from '../../../types/types';
 
 export const handleCrossfit = async (ctx: Context, messageType: MessageType) => {
   const now = new Date();
@@ -13,16 +17,16 @@ export const handleCrossfit = async (ctx: Context, messageType: MessageType) => 
   yesterday.setDate(now.getDate() - 1);
 
   const trainings: ITraining[] | null = await prisma.crossfitTraining.findMany({
-    where: { date: { gte: yesterday } },
+    where: { date: { gte: formatDate(yesterday) } },
     orderBy: [{ date: 'asc' }, { time: 'asc' }],
   });
 
   if (!trainings?.length) {
     await ctx.editMessageReplyMarkup(undefined);
     try {
-      await ctx.editMessageText(messageText.noWorkoutsAvailable);
+      await ctx.editMessageText('Нет доступных тренировок на ближайшие дни.');
     } catch {
-      await ctx.reply(messageText.noWorkoutsAvailable);
+      await ctx.reply('Нет доступных тренировок на ближайшие дни.');
     }
     return;
   }
@@ -44,15 +48,18 @@ export const handleCrossfit = async (ctx: Context, messageType: MessageType) => 
     ),
   ]);
 
-  buttons.push([Markup.button.callback('Назад', crossfitTypes.CROSS_FIT_DAY_BACK)]);
+  buttons.push(
+    [Markup.button.callback(AdminButtonsText.ADMIN_BACK, crossfitTypes.CROSS_FIT_DAY_BACK)],
+    [Markup.button.callback(crossfitTypesText.CLOSE, crossfitTypes.CLOSE)],
+  );
 
   if (messageType === 'reply') {
-    await ctx.reply(messageText.selectDay, Markup.inlineKeyboard(buttons));
+    await ctx.reply('Выберите день', Markup.inlineKeyboard(buttons));
   } else {
     try {
-      await ctx.editMessageText(messageText.selectDay, Markup.inlineKeyboard(buttons));
+      await ctx.editMessageText('Выберите день', Markup.inlineKeyboard(buttons));
     } catch {
-      await ctx.reply(messageText.selectDay, Markup.inlineKeyboard(buttons));
+      await ctx.reply('Выберите день', Markup.inlineKeyboard(buttons));
     }
   }
 };
@@ -69,11 +76,11 @@ export const handleCrossfitDay = async (
 
   if (!trainings?.length) {
     try {
-      await ctx.editMessageText(messageText.noDayAvailable);
+      await ctx.editMessageText('Нет доступных тренировок на этот день.');
       await handleCrossfit(ctx, 'reply');
     } catch (e) {
       console.error('Ошибка при обновлении клавиатуры:', e);
-      await ctx.reply(messageText.noDayAvailable);
+      await ctx.reply('Нет доступных тренировок на этот день.');
       await handleCrossfit(ctx, 'reply');
     }
     return;
@@ -90,15 +97,18 @@ export const handleCrossfitDay = async (
     ];
   });
 
-  buttons.push([Markup.button.callback('Назад', crossfitTypes.CROSS_FIT_TIME_BACK)]);
+  buttons.push(
+    [Markup.button.callback(AdminButtonsText.ADMIN_BACK, crossfitTypes.CROSS_FIT_TIME_BACK)],
+    [Markup.button.callback(crossfitTypesText.CLOSE, crossfitTypes.CLOSE)],
+  );
 
   if (messageType === 'reply') {
-    await ctx.reply(messageText.selectTime, Markup.inlineKeyboard(buttons));
+    await ctx.reply('Выберите время', Markup.inlineKeyboard(buttons));
   } else {
     try {
-      await ctx.editMessageText(messageText.selectTime, Markup.inlineKeyboard(buttons));
+      await ctx.editMessageText('Выберите время', Markup.inlineKeyboard(buttons));
     } catch {
-      await ctx.reply(messageText.selectTime, Markup.inlineKeyboard(buttons));
+      await ctx.reply('Выберите время', Markup.inlineKeyboard(buttons));
     }
   }
 };
@@ -114,7 +124,7 @@ export const handleCrossfitTime = async (ctx: Context, trainingId: number) => {
   });
 
   if (!training) {
-    await ctx.reply(messageText.slotUndefined);
+    await ctx.reply('Слот не найден');
     return;
   }
 
@@ -122,11 +132,11 @@ export const handleCrossfitTime = async (ctx: Context, trainingId: number) => {
 
   if (free <= 0) {
     try {
-      await ctx.editMessageText(messageText.full);
+      await ctx.editMessageText('Мест нет');
       await handleCrossfitDay(ctx, training.dayOfWeek, 'reply');
     } catch (e) {
       console.error('Ошибка при обновлении клавиатуры:', e);
-      await ctx.reply(messageText.full);
+      await ctx.reply('Мест нет');
       await handleCrossfitDay(ctx, training.dayOfWeek, 'reply');
     }
 
@@ -139,11 +149,13 @@ export const handleCrossfitTime = async (ctx: Context, trainingId: number) => {
 
   if (!!userBooking) {
     try {
-      await ctx.editMessageText(`${messageText.alreadyBooked} (${getFormatDate(training.date)})`);
+      await ctx.editMessageText(
+        `${'Вы уже записаны на тренировку в этот день'} (${getFormatDate(training.date)})`,
+      );
       await handleCrossfit(ctx, 'reply');
     } catch (e) {
       console.error('Ошибка при обновлении клавиатуры:', e);
-      await ctx.reply(messageText.alreadyBooked);
+      await ctx.reply('Вы уже записаны на тренировку в этот день');
       await handleCrossfit(ctx, 'reply');
     }
     return;
@@ -152,7 +164,7 @@ export const handleCrossfitTime = async (ctx: Context, trainingId: number) => {
   await prisma.booking.create({
     data: {
       userId: user.id,
-      userName: user.first_name,
+      userName: `${user.first_name ? user.first_name : ''} ${user.last_name ? user.last_name : ''}`,
       userNick: user.username ? `@${user.username}` : null,
       trainingId,
     },
@@ -165,6 +177,6 @@ export const handleCrossfitTime = async (ctx: Context, trainingId: number) => {
 
   await ctx.editMessageReplyMarkup(undefined);
   await ctx.editMessageText(
-    `${messageText.createBooked} ${training.time} (${getFormatDate(training.date)})`,
+    `Вы записаны на CrossFit: ${training.time} (${getFormatDate(training.date)})`,
   );
 };
