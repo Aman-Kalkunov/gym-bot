@@ -1,8 +1,9 @@
-import { Telegraf, Context } from 'telegraf';
-import { infoButtons } from '../../keyboards/infoButtons';
+import { Context, Telegraf } from 'telegraf';
+
 import { mainInfoText } from '../../../constants/text/text';
-import { getUserName } from '../../helpers/helpers';
 import { InfoButtons } from '../../../types/types';
+import { getUserName } from '../../helpers/helpers';
+import { infoButtons } from '../../keyboards/infoButtons';
 
 const waitingForQuestion = new Map<number, NodeJS.Timeout>();
 

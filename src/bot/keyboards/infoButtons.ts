@@ -1,5 +1,6 @@
-import { crossfitTypes, crossfitTypesText, InfoButtons, InfoButtonsText } from '../../types/types';
 import { Markup } from 'telegraf';
+
+import { crossfitTypes, crossfitTypesText, InfoButtons, InfoButtonsText } from '../../types/types';
 
 export const infoButtons = Markup.inlineKeyboard([
   [

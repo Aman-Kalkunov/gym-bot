@@ -1,10 +1,11 @@
+import { Markup } from 'telegraf';
+
 import {
-  ScheduleButtonsText,
   ScheduleButtons,
+  ScheduleButtonsText,
   crossfitTypes,
   crossfitTypesText,
 } from '../../types/types';
-import { Markup } from 'telegraf';
 
 export const scheduleButtons = Markup.inlineKeyboard([
   [Markup.button.callback(ScheduleButtonsText.CROSS_FIT, ScheduleButtons.CROSS_FIT)],

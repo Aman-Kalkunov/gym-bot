@@ -1,26 +1,6 @@
-import { Telegraf } from 'telegraf';
 import dotenv from 'dotenv';
+import { Telegraf } from 'telegraf';
 
-import { prisma } from './db';
-import { sayHello } from './bot/helpers/helpers';
-import { initCrossfitSchedule } from './bot/helpers/initCrossfitSchedule';
-import { setupCrossfitAutoUpdate } from './bot/helpers/scheduleMaintenance';
-import { setupInfoHandlers } from './bot/handlers/info/setupInfoHandlers';
-import { setupScheduleHandlers } from './bot/handlers/schedule/setupScheduleHandlers';
-import { adminCommands, mainCommands } from './bot/keyboards/commands';
-import {
-  handleCrossfit,
-  handleCrossfitDay,
-  handleCrossfitTime,
-} from './bot/handlers/schedule/handleCrossfit';
-import { scheduleButtons } from './bot/keyboards/scheduleButtons';
-import {
-  handleBookingInfo,
-  handleCancelBooking,
-  handleMyBookings,
-} from './bot/handlers/booking/handleBooking';
-import { setupBookingHandlers } from './bot/handlers/booking/setupBookingHandlers';
-import { setupAdminHandlers } from './bot/handlers/admin/setupAdminHandlers';
 import {
   addTrainingTime,
   handleAdminAddDay,
@@ -32,10 +12,30 @@ import {
   handleAdminSelectTime,
   removeTrainingTime,
 } from './bot/handlers/admin/handleAdminSchedule';
-import { adminButtons } from './bot/keyboards/adminButtons';
-import { AdminButtons, crossfitTypes, WeightliftingButtons } from './types/types';
-import { handleWeightliftingDay } from './bot/handlers/schedule/handleWeightlifting';
+import { setupAdminHandlers } from './bot/handlers/admin/setupAdminHandlers';
+import {
+  handleBookingInfo,
+  handleCancelBooking,
+  handleMyBookings,
+} from './bot/handlers/booking/handleBooking';
+import { setupBookingHandlers } from './bot/handlers/booking/setupBookingHandlers';
 import { setupErrorHandlers } from './bot/handlers/error/errorHandler';
+import { setupInfoHandlers } from './bot/handlers/info/setupInfoHandlers';
+import {
+  handleCrossfit,
+  handleCrossfitDay,
+  handleCrossfitTime,
+} from './bot/handlers/schedule/handleCrossfit';
+import { handleWeightliftingDay } from './bot/handlers/schedule/handleWeightlifting';
+import { setupScheduleHandlers } from './bot/handlers/schedule/setupScheduleHandlers';
+import { sayHello } from './bot/helpers/helpers';
+import { initCrossfitSchedule } from './bot/helpers/initCrossfitSchedule';
+import { setupCrossfitAutoUpdate } from './bot/helpers/scheduleMaintenance';
+import { adminButtons } from './bot/keyboards/adminButtons';
+import { adminCommands, mainCommands } from './bot/keyboards/commands';
+import { scheduleButtons } from './bot/keyboards/scheduleButtons';
+import { prisma } from './db';
+import { AdminButtons, crossfitTypes, WeightliftingButtons } from './types/types';
 
 dotenv.config();
 

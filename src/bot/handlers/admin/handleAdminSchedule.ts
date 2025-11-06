@@ -1,10 +1,11 @@
 import { Context, Markup } from 'telegraf';
-import { prisma } from '../../../db';
+
 import { formatDate, getDayName, getFormatDate } from '../../../bot/helpers/helpers';
-import { CAPACITY as capacity } from '../../../types/types';
+import { prisma } from '../../../db';
 import {
   AdminButtons,
   AdminButtonsText,
+  CAPACITY as capacity,
   CROSS_FIT_ALL_TIME,
   crossfitTypes,
   crossfitTypesText,

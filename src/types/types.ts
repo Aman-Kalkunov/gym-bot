@@ -1,4 +1,4 @@
-export const CAPACITY = 2;
+export const CAPACITY = 12;
 
 export enum BotCommand {
   INFO = 'info',

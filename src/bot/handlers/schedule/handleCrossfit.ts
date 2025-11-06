@@ -1,6 +1,13 @@
-import { Context } from 'telegraf';
-import { Markup } from 'telegraf';
+import { Context, Markup } from 'telegraf';
 
+import { prisma } from '../../../db';
+import {
+  AdminButtonsText,
+  ITraining,
+  MessageType,
+  crossfitTypes,
+  crossfitTypesText,
+} from '../../../types/types';
 import {
   formatDate,
   getFormatDate,
@@ -8,14 +15,6 @@ import {
   getSlotWord,
   getUserName,
 } from '../../helpers/helpers';
-import { prisma } from '../../../db';
-import {
-  MessageType,
-  ITraining,
-  crossfitTypes,
-  crossfitTypesText,
-  AdminButtonsText,
-} from '../../../types/types';
 
 export const handleCrossfit = async (ctx: Context, messageType: MessageType) => {
   const now = new Date();

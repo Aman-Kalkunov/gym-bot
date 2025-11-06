@@ -1,10 +1,11 @@
+import { Markup } from 'telegraf';
+
 import {
-  AdminButtonsText,
   AdminButtons,
+  AdminButtonsText,
   crossfitTypes,
   crossfitTypesText,
 } from '../../types/types';
-import { Markup } from 'telegraf';
 
 export const adminButtons = Markup.inlineKeyboard([
   [Markup.button.callback(AdminButtonsText.ADMIN_SCHEDULE, AdminButtons.ADMIN_SCHEDULE)],

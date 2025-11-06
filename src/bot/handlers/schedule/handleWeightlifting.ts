@@ -1,13 +1,12 @@
-import { Context } from 'telegraf';
-import { Markup } from 'telegraf';
+import { Context, Markup } from 'telegraf';
 
+import { getUserName } from '../../../bot/helpers/helpers';
 import {
   crossfitTypes,
   crossfitTypesText,
   WeightliftingButtons,
   WeightliftingButtonsText,
 } from '../../../types/types';
-import { getUserName } from '../../../bot/helpers/helpers';
 
 export const handleWeightlifting = async (ctx: Context) => {
   const buttons = [

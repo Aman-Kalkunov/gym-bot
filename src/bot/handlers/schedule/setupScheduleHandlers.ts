@@ -1,8 +1,8 @@
-import { Telegraf, Context } from 'telegraf';
+import { Context, Telegraf } from 'telegraf';
 
-import { handleCrossfit } from './handleCrossfit';
-import { scheduleButtons } from '../../keyboards/scheduleButtons';
 import { BotCommand, ScheduleButtons } from '../../../types/types';
+import { scheduleButtons } from '../../keyboards/scheduleButtons';
+import { handleCrossfit } from './handleCrossfit';
 import { handleWeightlifting } from './handleWeightlifting';
 
 export const setupScheduleHandlers = (bot: Telegraf<Context>) => {

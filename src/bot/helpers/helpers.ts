@@ -1,7 +1,7 @@
-import { Context } from 'telegraf';
-import { User } from 'telegraf/typings/core/types/typegram';
 import { format } from 'date-fns';
 import { ru } from 'date-fns/locale';
+import { Context } from 'telegraf';
+import { User } from 'telegraf/typings/core/types/typegram';
 
 import { mainInfoText } from '../../constants/text/text';
 

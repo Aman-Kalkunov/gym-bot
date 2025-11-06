@@ -1,9 +1,8 @@
-import { Markup } from 'telegraf';
-import { Context } from 'telegraf';
+import { Context, Markup } from 'telegraf';
 
 import { prisma } from '../../../db';
+import { IBooking, MessageType, crossfitTypes, crossfitTypesText } from '../../../types/types';
 import { getFormatDate } from '../../helpers/helpers';
-import { MessageType, IBooking, crossfitTypes, crossfitTypesText } from '../../../types/types';
 
 export const handleMyBookings = async (ctx: Context, messageType: MessageType) => {
   const user = ctx.from;
