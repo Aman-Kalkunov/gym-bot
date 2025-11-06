@@ -1,7 +1,7 @@
 import { prisma } from '../../db';
 
-import { formatDate } from './helpers';
 import { CROSS_FIT_SCHEDULE, CAPACITY as capacity } from '../../types/types';
+import { formatDate } from './helpers';
 
 export const initCrossfitSchedule = async () => {
   const count: number = await prisma.crossfitTraining.count();

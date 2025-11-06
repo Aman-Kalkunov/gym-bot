@@ -1,6 +1,13 @@
-import { Context } from 'telegraf';
-import { Markup } from 'telegraf';
+import { Context, Markup } from 'telegraf';
 
+import { prisma } from '../../../db';
+import {
+  AdminButtonsText,
+  CrossfitTypes,
+  CrossfitTypesText,
+  ITraining,
+  MessageType,
+} from '../../../types/types';
 import {
   formatDate,
   getFormatDate,
@@ -8,14 +15,6 @@ import {
   getSlotWord,
   getUserName,
 } from '../../helpers/helpers';
-import { prisma } from '../../../db';
-import {
-  MessageType,
-  ITraining,
-  crossfitTypes,
-  crossfitTypesText,
-  AdminButtonsText,
-} from '../../../types/types';
 
 export const handleCrossfit = async (ctx: Context, messageType: MessageType) => {
   const now = new Date();
@@ -50,13 +49,13 @@ export const handleCrossfit = async (ctx: Context, messageType: MessageType) => 
   const buttons = Object.entries(daysMap).map(([day, slots]) => [
     Markup.button.callback(
       `${day} (${slots.length} ${getSlotWord(slots.length)})`,
-      `${crossfitTypes.CROSS_FIT_DAY}_${slots[0].dayOfWeek}`,
+      `${CrossfitTypes.CROSS_FIT_DAY}_${slots[0].dayOfWeek}`,
     ),
   ]);
 
   buttons.push(
-    [Markup.button.callback(AdminButtonsText.ADMIN_BACK, crossfitTypes.CROSS_FIT_DAY_BACK)],
-    [Markup.button.callback(crossfitTypesText.CLOSE, crossfitTypes.CLOSE)],
+    [Markup.button.callback(AdminButtonsText.ADMIN_BACK, CrossfitTypes.CROSS_FIT_DAY_BACK)],
+    [Markup.button.callback(CrossfitTypesText.CLOSE, CrossfitTypes.CLOSE)],
   );
 
   if (messageType === 'reply') {
@@ -98,14 +97,14 @@ export const handleCrossfitDay = async (
     return [
       Markup.button.callback(
         `${slot.time} ${free !== 0 ? `(${free} ${getPlacesWord(free)})` : '(Нет мест)'} `,
-        free !== 0 ? `${crossfitTypes.CROSS_FIT_TIME}_${slot.id}` : 'disabled',
+        free !== 0 ? `${CrossfitTypes.CROSS_FIT_TIME}_${slot.id}` : 'disabled',
       ),
     ];
   });
 
   buttons.push(
-    [Markup.button.callback(AdminButtonsText.ADMIN_BACK, crossfitTypes.CROSS_FIT_TIME_BACK)],
-    [Markup.button.callback(crossfitTypesText.CLOSE, crossfitTypes.CLOSE)],
+    [Markup.button.callback(AdminButtonsText.ADMIN_BACK, CrossfitTypes.CROSS_FIT_TIME_BACK)],
+    [Markup.button.callback(CrossfitTypesText.CLOSE, CrossfitTypes.CLOSE)],
   );
 
   if (messageType === 'reply') {

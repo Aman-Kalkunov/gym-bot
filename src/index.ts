@@ -1,26 +1,6 @@
-import { Telegraf } from 'telegraf';
 import dotenv from 'dotenv';
+import { Telegraf } from 'telegraf';
 
-import { prisma } from './db';
-import { sayHello } from './bot/helpers/helpers';
-import { initCrossfitSchedule } from './bot/helpers/initCrossfitSchedule';
-import { setupCrossfitAutoUpdate } from './bot/helpers/scheduleMaintenance';
-import { setupInfoHandlers } from './bot/handlers/info/setupInfoHandlers';
-import { setupScheduleHandlers } from './bot/handlers/schedule/setupScheduleHandlers';
-import { adminCommands, mainCommands } from './bot/keyboards/commands';
-import {
-  handleCrossfit,
-  handleCrossfitDay,
-  handleCrossfitTime,
-} from './bot/handlers/schedule/handleCrossfit';
-import { scheduleButtons } from './bot/keyboards/scheduleButtons';
-import {
-  handleBookingInfo,
-  handleCancelBooking,
-  handleMyBookings,
-} from './bot/handlers/booking/handleBooking';
-import { setupBookingHandlers } from './bot/handlers/booking/setupBookingHandlers';
-import { setupAdminHandlers } from './bot/handlers/admin/setupAdminHandlers';
 import {
   addTrainingTime,
   handleAdminAddDay,
@@ -32,10 +12,30 @@ import {
   handleAdminSelectTime,
   removeTrainingTime,
 } from './bot/handlers/admin/handleAdminSchedule';
-import { adminButtons } from './bot/keyboards/adminButtons';
-import { AdminButtons, crossfitTypes, WeightliftingButtons } from './types/types';
-import { handleWeightliftingDay } from './bot/handlers/schedule/handleWeightlifting';
+import { setupAdminHandlers } from './bot/handlers/admin/setupAdminHandlers';
+import {
+  handleBookingInfo,
+  handleCancelBooking,
+  handleMyBookings,
+} from './bot/handlers/booking/handleBooking';
+import { setupBookingHandlers } from './bot/handlers/booking/setupBookingHandlers';
 import { setupErrorHandlers } from './bot/handlers/error/errorHandler';
+import { setupInfoHandlers } from './bot/handlers/info/setupInfoHandlers';
+import {
+  handleCrossfit,
+  handleCrossfitDay,
+  handleCrossfitTime,
+} from './bot/handlers/schedule/handleCrossfit';
+import { handleWeightliftingDay } from './bot/handlers/schedule/handleWeightlifting';
+import { setupScheduleHandlers } from './bot/handlers/schedule/setupScheduleHandlers';
+import { sayHello } from './bot/helpers/helpers';
+import { initCrossfitSchedule } from './bot/helpers/initCrossfitSchedule';
+import { setupCrossfitAutoUpdate } from './bot/helpers/scheduleMaintenance';
+import { adminButtons } from './bot/keyboards/adminButtons';
+import { adminCommands, mainCommands } from './bot/keyboards/commands';
+import { scheduleButtons } from './bot/keyboards/scheduleButtons';
+import { prisma } from './db';
+import { AdminButtons, CrossfitTypes, WeightliftingButtons } from './types/types';
 
 dotenv.config();
 
@@ -94,18 +94,18 @@ bot.on('callback_query', async ctx => {
   const data = query.data;
 
   try {
-    if (data === crossfitTypes.CLOSE) {
+    if (data === CrossfitTypes.CLOSE) {
       await ctx.editMessageReplyMarkup(undefined);
       await ctx.answerCbQuery();
       return;
     }
-    if (data === crossfitTypes.CROSS_FIT_TIME_BACK) {
+    if (data === CrossfitTypes.CROSS_FIT_TIME_BACK) {
       await handleCrossfit(ctx, 'edit');
       await ctx.answerCbQuery();
       return;
     }
 
-    if (data === crossfitTypes.CROSS_FIT_DAY_BACK) {
+    if (data === CrossfitTypes.CROSS_FIT_DAY_BACK) {
       await ctx.editMessageText('Выберите тип тренировки', scheduleButtons);
       await ctx.answerCbQuery();
       return;
@@ -117,13 +117,13 @@ bot.on('callback_query', async ctx => {
       return;
     }
 
-    if (data === crossfitTypes.CROSS_FIT_MY_BACK) {
+    if (data === CrossfitTypes.CROSS_FIT_MY_BACK) {
       await handleMyBookings(ctx, 'edit');
       await ctx.answerCbQuery();
       return;
     }
 
-    if (data.startsWith(`${crossfitTypes.CROSS_FIT_DAY}_`)) {
+    if (data.startsWith(`${CrossfitTypes.CROSS_FIT_DAY}_`)) {
       const dayOfWeek = Number(data.split('_')[3]);
       if (Number.isNaN(dayOfWeek)) {
         await ctx.answerCbQuery('Некорректный день, попробуйте снова');
@@ -135,7 +135,7 @@ bot.on('callback_query', async ctx => {
       return;
     }
 
-    if (data.startsWith(`${crossfitTypes.CROSS_FIT_TIME}_`)) {
+    if (data.startsWith(`${CrossfitTypes.CROSS_FIT_TIME}_`)) {
       const trainingId = Number(data.split('_')[3]);
       if (Number.isNaN(trainingId)) {
         await ctx.answerCbQuery('Некорректное время, попробуйте снова');
@@ -147,7 +147,7 @@ bot.on('callback_query', async ctx => {
       return;
     }
 
-    if (data.startsWith(`${crossfitTypes.CROSS_FIT_BOOKING}_`)) {
+    if (data.startsWith(`${CrossfitTypes.CROSS_FIT_BOOKING}_`)) {
       const id = Number(data.split('_')[3]);
       if (Number.isNaN(id)) {
         await ctx.answerCbQuery('Запись не найдена, попробуйте снова');
@@ -159,7 +159,7 @@ bot.on('callback_query', async ctx => {
       return;
     }
 
-    if (data.startsWith(`${crossfitTypes.CROSS_FIT_CANCEL}_`)) {
+    if (data.startsWith(`${CrossfitTypes.CROSS_FIT_CANCEL}_`)) {
       const id = Number(data.split('_')[3]);
       if (Number.isNaN(id)) {
         await ctx.answerCbQuery('Запись не найдена, попробуйте снова');

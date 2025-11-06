@@ -1,9 +1,8 @@
-import { Markup } from 'telegraf';
-import { Context } from 'telegraf';
+import { Context, Markup } from 'telegraf';
 
 import { prisma } from '../../../db';
+import { CrossfitTypes, CrossfitTypesText, IBooking, MessageType } from '../../../types/types';
 import { getFormatDate } from '../../helpers/helpers';
-import { MessageType, IBooking, crossfitTypes, crossfitTypesText } from '../../../types/types';
 
 export const handleMyBookings = async (ctx: Context, messageType: MessageType) => {
   const user = ctx.from;
@@ -28,12 +27,12 @@ export const handleMyBookings = async (ctx: Context, messageType: MessageType) =
     return [
       Markup.button.callback(
         `${dateStr} — ${training?.time}`,
-        `${crossfitTypes.CROSS_FIT_BOOKING}_${id}`,
+        `${CrossfitTypes.CROSS_FIT_BOOKING}_${id}`,
       ),
     ];
   });
 
-  buttons.push([Markup.button.callback(crossfitTypesText.CLOSE, crossfitTypes.CLOSE)]);
+  buttons.push([Markup.button.callback(CrossfitTypesText.CLOSE, CrossfitTypes.CLOSE)]);
 
   if (messageType === 'reply') {
     await ctx.reply('Ваши записи:', Markup.inlineKeyboard(buttons));
@@ -70,9 +69,9 @@ export const handleBookingInfo = async (ctx: Context, bookingId: number) => {
   await ctx.editMessageText(
     text,
     Markup.inlineKeyboard([
-      [Markup.button.callback('Удалить запись', `${crossfitTypes.CROSS_FIT_CANCEL}_${bookingId}`)],
-      [Markup.button.callback('Назад', crossfitTypes.CROSS_FIT_MY_BACK)],
-      [Markup.button.callback(crossfitTypesText.CLOSE, crossfitTypes.CLOSE)],
+      [Markup.button.callback('Удалить запись', `${CrossfitTypes.CROSS_FIT_CANCEL}_${bookingId}`)],
+      [Markup.button.callback('Назад', CrossfitTypes.CROSS_FIT_MY_BACK)],
+      [Markup.button.callback(CrossfitTypesText.CLOSE, CrossfitTypes.CLOSE)],
     ]),
   );
 };

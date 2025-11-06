@@ -1,7 +1,8 @@
 import cron from 'node-cron';
+
 import { prisma } from '../../db';
+import { CROSS_FIT_SCHEDULE, ITraining, CAPACITY as capacity } from '../../types/types';
 import { formatDate } from './helpers';
-import { ITraining, CROSS_FIT_SCHEDULE, CAPACITY as capacity } from '../../types/types';
 
 export const setupCrossfitAutoUpdate = () => {
   cron.schedule('0 22 * * *', async () => {

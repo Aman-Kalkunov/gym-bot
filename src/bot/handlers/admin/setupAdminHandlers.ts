@@ -1,9 +1,9 @@
-import { Telegraf, Context } from 'telegraf';
+import { Context, Telegraf } from 'telegraf';
 
 import { adminButtons } from '../../../bot/keyboards/adminButtons';
-import { handleAdminSchedule } from './handleAdminSchedule';
+import { AdminButtons, BotCommand } from '../../../types/types';
 import { handleAdminBookings } from './handleAdminBookings';
-import { BotCommand, AdminButtons } from '../../../types/types';
+import { handleAdminSchedule } from './handleAdminSchedule';
 
 export const setupAdminHandlers = (bot: Telegraf<Context>) => {
   bot.command(BotCommand.ADMIN_PANEL, async ctx => {

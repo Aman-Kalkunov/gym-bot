@@ -1,4 +1,4 @@
-export const CAPACITY = 2;
+export const CAPACITY = 12;
 
 export enum BotCommand {
   INFO = 'info',
@@ -94,7 +94,7 @@ export interface IBooking {
 
 export type MessageType = 'reply' | 'edit';
 
-export enum crossfitTypes {
+export enum CrossfitTypes {
   CROSS_FIT_DAY = 'CROSS_FIT_DAY',
   CROSS_FIT_TIME = 'CROSS_FIT_TIME',
   CROSS_FIT_BOOKING = 'CROSS_FIT_BOOKING',
@@ -105,7 +105,7 @@ export enum crossfitTypes {
   CLOSE = 'CLOSE',
 }
 
-export enum crossfitTypesText {
+export enum CrossfitTypesText {
   CLOSE = 'Закрыть',
 }
 

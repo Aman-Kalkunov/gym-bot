@@ -1,6 +1,7 @@
 import { Context } from 'telegraf';
-import { prisma } from '../../../db';
+
 import { getFormatDate } from '../../../bot/helpers/helpers';
+import { prisma } from '../../../db';
 import { ITraining } from '../../../types/types';
 
 export const handleAdminBookings = async (ctx: Context) => {
