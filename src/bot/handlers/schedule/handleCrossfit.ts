@@ -1,7 +1,13 @@
 import { Context } from 'telegraf';
 import { Markup } from 'telegraf';
 
-import { formatDate, getFormatDate, getPlacesWord, getSlotWord } from '../../helpers/helpers';
+import {
+  formatDate,
+  getFormatDate,
+  getPlacesWord,
+  getSlotWord,
+  getUserName,
+} from '../../helpers/helpers';
 import { prisma } from '../../../db';
 import {
   MessageType,
@@ -113,11 +119,13 @@ export const handleCrossfitDay = async (
   }
 };
 
-export const handleCrossfitTime = async (ctx: Context, trainingId: number) => {
+export const handleCrossfitTime = async (ctx: Context, trainingId: number, adminId: string) => {
   const user = ctx.from;
   if (!user) {
     return;
   }
+
+  const userName = getUserName(user);
 
   const training: ITraining | null = await prisma.crossfitTraining.findUnique({
     where: { id: trainingId },
@@ -179,4 +187,11 @@ export const handleCrossfitTime = async (ctx: Context, trainingId: number) => {
   await ctx.editMessageText(
     `Вы записаны на CrossFit: ${training.time} (${getFormatDate(training.date)})`,
   );
+
+  try {
+    await ctx.telegram.sendMessage(
+      adminId,
+      `${userName} записался на CrossFit: ${training.time} (${getFormatDate(training.date)})`,
+    );
+  } catch {}
 };

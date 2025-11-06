@@ -163,3 +163,13 @@ export enum AdminButtonsText {
   ADMIN_BOOKINGS = 'Список записавшихся',
   ADMIN_BACK = 'Назад',
 }
+
+export enum WeightliftingButtons {
+  WEIGHTLIFTING_WEN = 'WEIGHTLIFTING_WEN',
+  WEIGHTLIFTING_RFI = 'WEIGHTLIFTING_RFI',
+}
+
+export enum WeightliftingButtonsText {
+  WEIGHTLIFTING_WEN = 'Среда 17:00',
+  WEIGHTLIFTING_RFI = 'Пятница 17:00',
+}

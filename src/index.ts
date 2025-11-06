@@ -33,7 +33,8 @@ import {
   removeTrainingTime,
 } from './bot/handlers/admin/handleAdminSchedule';
 import { adminButtons } from './bot/keyboards/adminButtons';
-import { AdminButtons, crossfitTypes } from './types/types';
+import { AdminButtons, crossfitTypes, WeightliftingButtons } from './types/types';
+import { handleWeightliftingDay } from './bot/handlers/schedule/handleWeightlifting';
 
 dotenv.config();
 
@@ -138,7 +139,7 @@ bot.on('callback_query', async ctx => {
         return;
       }
 
-      await handleCrossfitTime(ctx, trainingId);
+      await handleCrossfitTime(ctx, trainingId, adminId);
       await ctx.answerCbQuery();
       return;
     }
@@ -271,6 +272,15 @@ bot.on('callback_query', async ctx => {
       }
 
       await handleAdminConfirmAdd(ctx, dayOfWeek, time);
+      await ctx.answerCbQuery();
+      return;
+    }
+
+    if (
+      data === WeightliftingButtons.WEIGHTLIFTING_WEN ||
+      data === WeightliftingButtons.WEIGHTLIFTING_RFI
+    ) {
+      handleWeightliftingDay(ctx, data, adminId);
       await ctx.answerCbQuery();
       return;
     }
