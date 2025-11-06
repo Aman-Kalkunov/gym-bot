@@ -35,6 +35,7 @@ import {
 import { adminButtons } from './bot/keyboards/adminButtons';
 import { AdminButtons, crossfitTypes, WeightliftingButtons } from './types/types';
 import { handleWeightliftingDay } from './bot/handlers/schedule/handleWeightlifting';
+import { setupErrorHandlers } from './bot/handlers/error/errorHandler';
 
 dotenv.config();
 
@@ -74,6 +75,8 @@ bot.telegram.setMyCommands(adminCommands, {
     process.exit(1);
   }
 })();
+
+setupErrorHandlers(bot);
 
 setupInfoHandlers(bot, adminId);
 setupScheduleHandlers(bot);
