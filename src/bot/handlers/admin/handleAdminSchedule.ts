@@ -7,8 +7,8 @@ import {
   AdminButtonsText,
   CAPACITY as capacity,
   CROSS_FIT_ALL_TIME,
-  crossfitTypes,
-  crossfitTypesText,
+  CrossfitTypes,
+  CrossfitTypesText,
   ITraining,
 } from '../../../types/types';
 
@@ -39,7 +39,7 @@ export const handleAdminSchedule = async (ctx: Context) => {
 
   buttons.push(
     [Markup.button.callback(AdminButtonsText.ADMIN_BACK, AdminButtons.ADMIN_BACK)],
-    [Markup.button.callback(crossfitTypesText.CLOSE, crossfitTypes.CLOSE)],
+    [Markup.button.callback(CrossfitTypesText.CLOSE, CrossfitTypes.CLOSE)],
   );
 
   await ctx.editMessageText(AdminButtonsText.ADMIN_SCHEDULE, Markup.inlineKeyboard(buttons));
@@ -84,7 +84,7 @@ export const handleAdminScheduleDay = async (ctx: Context, dayOfWeek: number) =>
       ),
     ],
     [Markup.button.callback(AdminButtonsText.ADMIN_BACK, AdminButtons.ADMIN_SCHEDULE)],
-    [Markup.button.callback(crossfitTypesText.CLOSE, crossfitTypes.CLOSE)],
+    [Markup.button.callback(CrossfitTypesText.CLOSE, CrossfitTypes.CLOSE)],
   ];
 
   await ctx.editMessageText(message, {
@@ -113,7 +113,7 @@ export const handleAdminAddDay = async (ctx: Context) => {
   ]);
   buttons.push(
     [Markup.button.callback(AdminButtonsText.ADMIN_BACK, AdminButtons.ADMIN_SCHEDULE)],
-    [Markup.button.callback(crossfitTypesText.CLOSE, crossfitTypes.CLOSE)],
+    [Markup.button.callback(CrossfitTypesText.CLOSE, CrossfitTypes.CLOSE)],
   );
 
   await ctx.editMessageText('Выберите день для добавления:', Markup.inlineKeyboard(buttons));
@@ -137,7 +137,7 @@ export const handleAdminAddTime = async (ctx: Context, dayOfWeek: number) => {
   ]);
   buttons.push(
     [Markup.button.callback(AdminButtonsText.ADMIN_BACK, `${AdminButtons.ADMIN_DAY}_${dayOfWeek}`)],
-    [Markup.button.callback(crossfitTypesText.CLOSE, crossfitTypes.CLOSE)],
+    [Markup.button.callback(CrossfitTypesText.CLOSE, CrossfitTypes.CLOSE)],
   );
 
   await ctx.editMessageText('Выберите время для добавления:', Markup.inlineKeyboard(buttons));
@@ -158,7 +158,7 @@ export const handleAdminRemoveTime = async (ctx: Context, dayOfWeek: number) => 
   ]);
   buttons.push(
     [Markup.button.callback(AdminButtonsText.ADMIN_BACK, `${AdminButtons.ADMIN_DAY}_${dayOfWeek}`)],
-    [Markup.button.callback(crossfitTypesText.CLOSE, crossfitTypes.CLOSE)],
+    [Markup.button.callback(CrossfitTypesText.CLOSE, CrossfitTypes.CLOSE)],
   );
 
   await ctx.editMessageText('Выберите время для удаления:', Markup.inlineKeyboard(buttons));
@@ -242,7 +242,7 @@ export const handleAdminSelectTime = async (ctx: Context, dayOfWeek: number) => 
 
   buttons.push(
     [Markup.button.callback(AdminButtonsText.ADMIN_BACK, AdminButtons.ADMIN_SCHEDULE)],
-    [Markup.button.callback(crossfitTypesText.CLOSE, crossfitTypes.CLOSE)],
+    [Markup.button.callback(CrossfitTypesText.CLOSE, CrossfitTypes.CLOSE)],
   );
 
   await ctx.editMessageText(

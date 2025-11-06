@@ -2,8 +2,8 @@ import { Context, Markup } from 'telegraf';
 
 import { getUserName } from '../../../bot/helpers/helpers';
 import {
-  crossfitTypes,
-  crossfitTypesText,
+  CrossfitTypes,
+  CrossfitTypesText,
   WeightliftingButtons,
   WeightliftingButtonsText,
 } from '../../../types/types';
@@ -22,7 +22,7 @@ export const handleWeightlifting = async (ctx: Context) => {
         WeightliftingButtons.WEIGHTLIFTING_RFI,
       ),
     ],
-    [Markup.button.callback(crossfitTypesText.CLOSE, crossfitTypes.CLOSE)],
+    [Markup.button.callback(CrossfitTypesText.CLOSE, CrossfitTypes.CLOSE)],
   ];
 
   try {
