@@ -1,4 +1,4 @@
-import { BotCommand, BotCommandText } from '../../types/botCommands';
+import { BotCommand, BotCommandText } from '../../types/types';
 
 export const mainCommands = [
   { command: BotCommand.INFO, description: BotCommandText.INFO },

@@ -1,9 +1,9 @@
 import { Context } from 'telegraf';
+import { User } from 'telegraf/typings/core/types/typegram';
 import { format } from 'date-fns';
 import { ru } from 'date-fns/locale';
 
 import { mainInfoText } from '../../constants/text/text';
-import { User } from 'telegraf/typings/core/types/typegram';
 
 export const sayHello = () => async (ctx: Context) => {
   await ctx.reply(mainInfoText.startText);
@@ -48,7 +48,17 @@ export const getPlacesWord = (count: number) => {
   return 'мест';
 };
 
-export const getFormatDate = (date: Date) => {
+export const getFormatDate = (date?: string) => {
+  if (!date) {
+    return '';
+  }
   const formatted = format(new Date(date), 'EEEE, d MMMM', { locale: ru });
   return formatted.charAt(0).toUpperCase() + formatted.slice(1);
+};
+
+export const formatDate = (date: Date) => format(date, 'yyyy-MM-dd');
+
+export const getDayName = (day: number): string => {
+  const names = ['Воскресенье', 'Понедельник', 'Вторник', 'Среда', 'Четверг', 'Пятница', 'Суббота'];
+  return names[day];
 };

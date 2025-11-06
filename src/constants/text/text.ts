@@ -33,27 +33,3 @@ Inst: https://instagram.com/sputnik_functional_cf?utm_source=qr&igshid=YzU1NGVlO
 Адрес: г. Самара, ул. Соколова 36, третий этаж.`,
   questionText: 'Напиши свой вопрос, и администратор свяжется с тобой в ближайшее время!',
 };
-
-export const messageText = {
-  information: 'Информация',
-  schedule: 'Расписание',
-  question: 'Вопрос от',
-  answer: 'Спасибо! Ваш вопрос отправлен администратору.',
-  noWorkoutsAvailable: 'Нет доступных тренировок на ближайшие дни.',
-  noDayAvailable: 'Нет доступных тренировок на этот день.',
-  selectWorkoutType: 'Выберите тип тренировки',
-  selectDay: 'Выберите день',
-  selectTime: 'Выберите время',
-  slotUndefined: 'Слот не найден',
-  full: 'Мест нет',
-  alreadyBooked: 'Вы уже записаны на тренировку в этот день',
-  createBooked: 'Вы записаны на CrossFit:',
-  noBooking: 'У вас нет активных записей.',
-  yourBookings: 'Ваши записи:',
-  bookingNotFund: 'Запись не найдена или уже удалена.',
-  keyboardError: 'Ошибка при обновлении клавиатуры:',
-  youSureDelete: 'Вы уверены, что хотите удалить запись?',
-  delete: 'Удалить запись',
-  back: 'Назад',
-  bookingCanceled: 'Отменена запись на',
-};
