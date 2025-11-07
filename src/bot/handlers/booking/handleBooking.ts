@@ -104,4 +104,5 @@ export const handleCancelBooking = async (ctx: Context, bookingId: number) => {
   await ctx.editMessageText(
     `Отменена запись на' ${booking.training?.time} (${getFormatDate(booking.training?.date)}).`,
   );
+  await handleMyBookings(ctx, 'reply');
 };

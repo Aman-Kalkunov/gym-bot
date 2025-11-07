@@ -44,6 +44,8 @@ const adminId = process.env.ADMIN_ID!;
 
 const bot = new Telegraf(token);
 
+setupErrorHandlers(bot);
+
 bot.start(sayHello());
 
 bot.telegram.setMyCommands(mainCommands, {
@@ -75,8 +77,6 @@ bot.telegram.setMyCommands(adminCommands, {
     process.exit(1);
   }
 })();
-
-setupErrorHandlers(bot);
 
 setupInfoHandlers(bot, adminId);
 setupScheduleHandlers(bot);
