@@ -5,7 +5,7 @@ import { CROSS_FIT_SCHEDULE, ITraining, CAPACITY as capacity } from '../../types
 import { formatDate } from './helpers';
 
 export const setupCrossfitAutoUpdate = () => {
-  cron.schedule('0 22 * * *', async () => {
+  cron.schedule('0 21 * * *', async () => {
     const today = new Date();
 
     const tomorrow = new Date(today);
