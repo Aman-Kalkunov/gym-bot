@@ -30,6 +30,6 @@ export const mainInfoText = {
 Тел.: +79372063972
 ВК: https://vk.com/sputnik_functional_cf
 Inst: https://instagram.com/sputnik_functional_cf?utm_source=qr&igshid=YzU1NGVlODEzOA==
-Адрес: г. Самара, ул. Соколова 36, третий этаж.`,
+Адрес: г. Самара, ул. Николая Панова 33а.`,
   questionText: 'Напиши свой вопрос, и администратор свяжется с тобой в ближайшее время!',
 };
