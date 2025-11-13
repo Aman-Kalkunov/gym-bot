@@ -118,7 +118,12 @@ export const handleCrossfitDay = async (
   }
 };
 
-export const handleCrossfitTime = async (ctx: Context, trainingId: number, adminId: string) => {
+export const handleCrossfitTime = async (
+  ctx: Context,
+  trainingId: number,
+  adminId: string,
+  devId: string,
+) => {
   const user = ctx.from;
   if (!user) {
     return;
@@ -190,6 +195,10 @@ export const handleCrossfitTime = async (ctx: Context, trainingId: number, admin
   try {
     await ctx.telegram.sendMessage(
       adminId,
+      `${userName} записался на CrossFit: ${training.time} (${getFormatDate(training.date)})`,
+    );
+    await ctx.telegram.sendMessage(
+      devId,
       `${userName} записался на CrossFit: ${training.time} (${getFormatDate(training.date)})`,
     );
   } catch {}
