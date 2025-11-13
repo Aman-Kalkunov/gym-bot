@@ -32,7 +32,7 @@ import { sayHello } from './bot/helpers/helpers';
 import { initCrossfitSchedule } from './bot/helpers/initCrossfitSchedule';
 import { setupCrossfitAutoUpdate } from './bot/helpers/scheduleMaintenance';
 import { adminButtons } from './bot/keyboards/adminButtons';
-import { adminCommands, mainCommands } from './bot/keyboards/commands';
+import { adminCommands, devCommands, mainCommands } from './bot/keyboards/commands';
 import { scheduleButtons } from './bot/keyboards/scheduleButtons';
 import { prisma } from './db';
 import { AdminButtons, CrossfitTypes, WeightliftingButtons } from './types/types';
@@ -41,6 +41,7 @@ dotenv.config();
 
 const token = process.env.BOT_TOKEN!;
 const adminId = process.env.ADMIN_ID!;
+const devId = process.env.DEV_ID!;
 
 const bot = new Telegraf(token);
 
@@ -56,9 +57,9 @@ bot.telegram.setMyCommands(adminCommands, {
   scope: { type: 'chat', chat_id: adminId },
 });
 
-/* bot.telegram.setMyCommands(adminCommands, {
-  scope: { type: 'chat', chat_id: process.env.DEV_ID! },
-}); */
+bot.telegram.setMyCommands(devCommands, {
+  scope: { type: 'chat', chat_id: devId },
+});
 
 (async () => {
   try {
@@ -78,7 +79,7 @@ bot.telegram.setMyCommands(adminCommands, {
   }
 })();
 
-setupInfoHandlers(bot, adminId);
+setupInfoHandlers(bot, adminId, devId);
 setupScheduleHandlers(bot);
 setupBookingHandlers(bot);
 setupAdminHandlers(bot);
@@ -142,7 +143,7 @@ bot.on('callback_query', async ctx => {
         return;
       }
 
-      await handleCrossfitTime(ctx, trainingId, adminId);
+      await handleCrossfitTime(ctx, trainingId, adminId, devId);
       await ctx.answerCbQuery();
       return;
     }
