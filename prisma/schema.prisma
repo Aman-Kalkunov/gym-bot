@@ -19,7 +19,7 @@ model CrossfitTraining {
 
 model Booking {
   id          Int      @id @default(autoincrement())
-  userId      BigInt   @map("userId_bigint") 
+  userId      BigInt   
   userName    String
   userNick    String?
   trainingId  Int
