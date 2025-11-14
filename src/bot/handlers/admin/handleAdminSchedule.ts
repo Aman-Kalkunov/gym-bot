@@ -177,7 +177,7 @@ export const handleAdminRemoveDay = async (ctx: Context, dayOfWeek: number) => {
     training.users?.forEach(async user => {
       try {
         await ctx.telegram.sendMessage(
-          user.userId,
+          user.userId.toString(),
           `Отменена тренировка на ${training.time} (${getFormatDate(training.date)})`,
         );
       } catch {}
@@ -222,7 +222,7 @@ export const removeTrainingTime = async (ctx: Context, trainingId: number) => {
   training.users?.forEach(async user => {
     try {
       await ctx.telegram.sendMessage(
-        user.userId,
+        user.userId.toString(),
         `Отменена тренировка на ${training.time} (${getFormatDate(training.date)})`,
       );
     } catch {}
