@@ -84,7 +84,7 @@ export interface ITraining {
 
 export interface IBooking {
   id: number;
-  userId: number;
+  userId: bigint | number;
   userName: string;
   userNick: string | null;
   trainingId: number;
