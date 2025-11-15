@@ -166,7 +166,7 @@ bot.on('callback_query', async ctx => {
         await ctx.answerCbQuery('Запись не найдена, попробуйте снова');
         return;
       }
-      await handleCancelBooking(ctx, id);
+      await handleCancelBooking(ctx, id, adminId, devId);
       await ctx.answerCbQuery();
       return;
     }

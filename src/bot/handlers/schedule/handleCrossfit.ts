@@ -14,6 +14,7 @@ import {
   getPlacesWord,
   getSlotWord,
   getUserName,
+  safeEditOrReply,
 } from '../../helpers/helpers';
 
 export const handleCrossfit = async (ctx: Context, messageType: MessageType) => {
@@ -27,12 +28,7 @@ export const handleCrossfit = async (ctx: Context, messageType: MessageType) => 
   });
 
   if (!trainings?.length) {
-    await ctx.editMessageReplyMarkup(undefined);
-    try {
-      await ctx.editMessageText('Нет доступных тренировок на ближайшие дни.');
-    } catch {
-      await ctx.reply('Нет доступных тренировок на ближайшие дни.');
-    }
+    await safeEditOrReply(ctx, 'Нет доступных тренировок на ближайшие дни.');
     return;
   }
 
@@ -61,11 +57,7 @@ export const handleCrossfit = async (ctx: Context, messageType: MessageType) => 
   if (messageType === 'reply') {
     await ctx.reply('Выберите день', Markup.inlineKeyboard(buttons));
   } else {
-    try {
-      await ctx.editMessageText('Выберите день', Markup.inlineKeyboard(buttons));
-    } catch {
-      await ctx.reply('Выберите день', Markup.inlineKeyboard(buttons));
-    }
+    await safeEditOrReply(ctx, 'Выберите день', Markup.inlineKeyboard(buttons));
   }
 };
 
@@ -80,14 +72,8 @@ export const handleCrossfitDay = async (
   });
 
   if (!trainings?.length) {
-    try {
-      await ctx.editMessageText('Нет доступных тренировок на этот день.');
-      await handleCrossfit(ctx, 'reply');
-    } catch (e) {
-      console.error('Ошибка при обновлении клавиатуры:', e);
-      await ctx.reply('Нет доступных тренировок на этот день.');
-      await handleCrossfit(ctx, 'reply');
-    }
+    await safeEditOrReply(ctx, 'Нет доступных тренировок на этот день.');
+    await handleCrossfit(ctx, 'reply');
     return;
   }
 
@@ -96,8 +82,8 @@ export const handleCrossfitDay = async (
 
     return [
       Markup.button.callback(
-        `${slot.time} ${free !== 0 ? `(${free} ${getPlacesWord(free)})` : '(Нет мест)'} `,
-        free !== 0 ? `${CrossfitTypes.CROSS_FIT_TIME}_${slot.id}` : 'disabled',
+        `${slot.time} ${free > 0 ? `(${free} ${getPlacesWord(free)})` : '(Нет мест)'}`,
+        free > 0 ? `${CrossfitTypes.CROSS_FIT_TIME}_${slot.id}` : 'disabled',
       ),
     ];
   });
@@ -110,11 +96,7 @@ export const handleCrossfitDay = async (
   if (messageType === 'reply') {
     await ctx.reply('Выберите время', Markup.inlineKeyboard(buttons));
   } else {
-    try {
-      await ctx.editMessageText('Выберите время', Markup.inlineKeyboard(buttons));
-    } catch {
-      await ctx.reply('Выберите время', Markup.inlineKeyboard(buttons));
-    }
+    await safeEditOrReply(ctx, 'Выберите время', Markup.inlineKeyboard(buttons));
   }
 };
 
@@ -136,70 +118,64 @@ export const handleCrossfitTime = async (
   });
 
   if (!training) {
-    await ctx.reply('Слот не найден');
+    await safeEditOrReply(ctx, 'Слот не найден.');
     return;
   }
 
   const free = training.capacity - training.booked;
 
   if (free <= 0) {
-    try {
-      await ctx.editMessageText('Мест нет');
-      await handleCrossfitDay(ctx, training.dayOfWeek, 'reply');
-    } catch (e) {
-      console.error('Ошибка при обновлении клавиатуры:', e);
-      await ctx.reply('Мест нет');
-      await handleCrossfitDay(ctx, training.dayOfWeek, 'reply');
-    }
-
+    await safeEditOrReply(ctx, 'Мест нет.');
+    await handleCrossfitDay(ctx, training.dayOfWeek, 'reply');
     return;
   }
 
-  const userBooking = await prisma.booking.findFirst({
+  const existingBooking = await prisma.booking.findFirst({
     where: { userId: user.id, training: { date: training.date } },
   });
 
-  if (!!userBooking) {
-    try {
-      await ctx.editMessageText(
-        `${'Вы уже записаны на тренировку в этот день'} (${getFormatDate(training.date)})`,
-      );
-      await handleCrossfit(ctx, 'reply');
-    } catch (e) {
-      console.error('Ошибка при обновлении клавиатуры:', e);
-      await ctx.reply('Вы уже записаны на тренировку в этот день');
-      await handleCrossfit(ctx, 'reply');
-    }
+  if (existingBooking) {
+    await safeEditOrReply(ctx, `Вы уже записаны на тренировку (${getFormatDate(training.date)})`);
+    await handleCrossfit(ctx, 'reply');
     return;
   }
 
-  await prisma.booking.create({
-    data: {
-      userId: user.id,
-      userName: `${user.first_name ? user.first_name : ''} ${user.last_name ? user.last_name : ''}`,
-      userNick: user.username ? `@${user.username}` : null,
-      trainingId,
-    },
-  });
+  try {
+    await prisma.$transaction([
+      prisma.booking.create({
+        data: {
+          userId: user.id,
+          userName: `${user.first_name ?? ''} ${user.last_name ?? ''}`.trim(),
+          userNick: user.username ? `@${user.username}` : null,
+          trainingId,
+        },
+      }),
+      prisma.crossfitTraining.update({
+        where: { id: trainingId },
+        data: { booked: { increment: 1 } },
+      }),
+    ]);
+  } catch (err) {
+    console.error('Ошибка транзакции при записи:', err);
+    await safeEditOrReply(ctx, 'Не удалось записаться. Попробуйте позже.');
+    return;
+  }
 
-  await prisma.crossfitTraining.update({
-    where: { id: trainingId },
-    data: { booked: { increment: 1 } },
-  });
-
-  await ctx.editMessageReplyMarkup(undefined);
-  await ctx.editMessageText(
+  await safeEditOrReply(
+    ctx,
     `Вы записаны на CrossFit: ${training.time} (${getFormatDate(training.date)})`,
   );
 
+  const msg = `${userName} записался(-ась) на CrossFit: ${training.time} (${getFormatDate(
+    training.date,
+  )})`;
+
   try {
-    await ctx.telegram.sendMessage(
-      adminId,
-      `${userName} записался на CrossFit: ${training.time} (${getFormatDate(training.date)})`,
-    );
-    await ctx.telegram.sendMessage(
-      devId,
-      `${userName} записался на CrossFit: ${training.time} (${getFormatDate(training.date)})`,
-    );
-  } catch {}
+    await Promise.all([
+      ctx.telegram.sendMessage(adminId, msg),
+      ctx.telegram.sendMessage(devId, msg),
+    ]);
+  } catch (err) {
+    console.error('Ошибка отправки уведомления администратору:', err);
+  }
 };

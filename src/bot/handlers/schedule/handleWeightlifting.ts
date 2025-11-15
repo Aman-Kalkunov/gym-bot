@@ -48,7 +48,7 @@ export const handleWeightliftingDay = async (
     try {
       await ctx.telegram.sendMessage(
         adminId,
-        `${userName} записался на тяжелую атлетику в ${data === WeightliftingButtons.WEIGHTLIFTING_WEN ? 'среду' : 'пятницу'}`,
+        `${userName} записался(-ась) на тяжелую атлетику в ${data === WeightliftingButtons.WEIGHTLIFTING_WEN ? 'среду' : 'пятницу'}`,
       );
     } catch {}
   }
