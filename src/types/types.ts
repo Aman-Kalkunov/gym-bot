@@ -181,3 +181,8 @@ export enum WeightliftingButtonsText {
   WEIGHTLIFTING_WEN = 'Среда 17:00',
   WEIGHTLIFTING_RFI = 'Пятница 17:00',
 }
+
+export interface Route {
+  match: (data: string) => boolean;
+  handler: (ctx: any, match: RegExpMatchArray | null) => Promise<void>;
+}
