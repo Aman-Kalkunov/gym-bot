@@ -1,8 +1,9 @@
 import { format } from 'date-fns';
 import { ru } from 'date-fns/locale';
 import { Context } from 'telegraf';
-import { User } from 'telegraf/typings/core/types/typegram';
+import { InlineKeyboardMarkup, User } from 'telegraf/typings/core/types/typegram';
 
+import { Markup } from 'telegraf/typings/markup';
 import { mainInfoText } from '../../constants/text/text';
 
 export const sayHello = () => async (ctx: Context) => {
@@ -61,4 +62,16 @@ export const formatDate = (date: Date) => format(date, 'yyyy-MM-dd');
 export const getDayName = (day: number): string => {
   const names = ['Воскресенье', 'Понедельник', 'Вторник', 'Среда', 'Четверг', 'Пятница', 'Суббота'];
   return names[day];
+};
+
+export const safeEditOrReply = async (
+  ctx: Context,
+  text: string,
+  keyBoard?: Markup<InlineKeyboardMarkup>,
+) => {
+  try {
+    await ctx.editMessageText(text, keyBoard);
+  } catch {
+    await ctx.reply(text, keyBoard);
+  }
 };
