@@ -15,6 +15,8 @@ export enum BotCommandText {
 }
 
 export enum TrainingTime {
+  '07:00' = '07:00',
+  '08:00' = '08:00',
   '09:00' = '09:00',
   '10:00' = '10:00',
   '11:00' = '11:00',
@@ -27,6 +29,8 @@ export enum TrainingTime {
   '18:00' = '18:00',
   '19:00' = '19:00',
   '20:00' = '20:00',
+  '21:00' = '21:00',
+  '22:00' = '22:00',
 }
 
 export const CROSS_FIT_SCHEDULE: Record<number, string[]> = {
@@ -58,6 +62,8 @@ export const CROSS_FIT_SCHEDULE: Record<number, string[]> = {
 };
 
 export const CROSS_FIT_ALL_TIME = [
+  TrainingTime['07:00'],
+  TrainingTime['08:00'],
   TrainingTime['09:00'],
   TrainingTime['10:00'],
   TrainingTime['11:00'],
@@ -70,6 +76,8 @@ export const CROSS_FIT_ALL_TIME = [
   TrainingTime['18:00'],
   TrainingTime['19:00'],
   TrainingTime['20:00'],
+  TrainingTime['21:00'],
+  TrainingTime['22:00'],
 ];
 
 export interface ITraining {

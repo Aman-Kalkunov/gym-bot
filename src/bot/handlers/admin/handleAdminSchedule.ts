@@ -1,6 +1,12 @@
 import { Context, Markup } from 'telegraf';
 
-import { formatDate, getDayName, getFormatDate } from '../../../bot/helpers/helpers';
+import {
+  buildDayMessage,
+  formatDate,
+  getDayName,
+  getFormatDate,
+  safeEditOrReply,
+} from '../../../bot/helpers/helpers';
 import { prisma } from '../../../db';
 import {
   AdminButtons,
@@ -17,7 +23,8 @@ export const handleAdminSchedule = async (ctx: Context) => {
     orderBy: { date: 'asc' },
   });
 
-  if (!trainings) {
+  if (!trainings?.length) {
+    await safeEditOrReply(ctx, 'Расписание пустое.');
     return;
   }
 
@@ -42,7 +49,7 @@ export const handleAdminSchedule = async (ctx: Context) => {
     [Markup.button.callback(CrossfitTypesText.CLOSE, CrossfitTypes.CLOSE)],
   );
 
-  await ctx.editMessageText(AdminButtonsText.ADMIN_SCHEDULE, Markup.inlineKeyboard(buttons));
+  await safeEditOrReply(ctx, AdminButtonsText.ADMIN_SCHEDULE, Markup.inlineKeyboard(buttons));
 };
 
 export const handleAdminScheduleDay = async (ctx: Context, dayOfWeek: number) => {
@@ -50,19 +57,8 @@ export const handleAdminScheduleDay = async (ctx: Context, dayOfWeek: number) =>
     where: { dayOfWeek },
     orderBy: { time: 'asc' },
   });
-  if (!trainingsOfDay) {
-    return;
-  }
 
-  const dayName = getFormatDate(trainingsOfDay[0].date);
-  let message = `<b>${dayName}</b>\n\n`;
-
-  if (trainingsOfDay.length === 0) {
-    message += 'Нет запланированных тренировок.';
-  } else {
-    const list = trainingsOfDay.map(t => `${t.time} — ${t.booked}/${t.capacity} мест`).join('\n');
-    message += list;
-  }
+  const message = buildDayMessage(trainingsOfDay);
 
   const buttons = [
     [
@@ -116,7 +112,7 @@ export const handleAdminAddDay = async (ctx: Context) => {
     [Markup.button.callback(CrossfitTypesText.CLOSE, CrossfitTypes.CLOSE)],
   );
 
-  await ctx.editMessageText('Выберите день для добавления:', Markup.inlineKeyboard(buttons));
+  await safeEditOrReply(ctx, 'Выберите день для добавления:', Markup.inlineKeyboard(buttons));
 };
 
 export const handleAdminAddTime = async (ctx: Context, dayOfWeek: number) => {
@@ -132,6 +128,11 @@ export const handleAdminAddTime = async (ctx: Context, dayOfWeek: number) => {
 
   const available = times.filter(time => !existingTimes?.includes(time));
 
+  if (!available?.length) {
+    await ctx.answerCbQuery('Все времена уже добавлены', { show_alert: true });
+    return;
+  }
+
   const buttons = available.map(time => [
     Markup.button.callback(time, `${AdminButtons.ADMIN_SELECT_ADD_TIME}_${dayOfWeek}_${time}`),
   ]);
@@ -140,7 +141,7 @@ export const handleAdminAddTime = async (ctx: Context, dayOfWeek: number) => {
     [Markup.button.callback(CrossfitTypesText.CLOSE, CrossfitTypes.CLOSE)],
   );
 
-  await ctx.editMessageText('Выберите время для добавления:', Markup.inlineKeyboard(buttons));
+  await safeEditOrReply(ctx, 'Выберите время для добавления:', Markup.inlineKeyboard(buttons));
 };
 
 export const handleAdminRemoveTime = async (ctx: Context, dayOfWeek: number) => {
@@ -149,7 +150,8 @@ export const handleAdminRemoveTime = async (ctx: Context, dayOfWeek: number) => 
     orderBy: { time: 'asc' },
   });
 
-  if (!trainings) {
+  if (!trainings?.length) {
+    await safeEditOrReply(ctx, 'Нет тренировок для удаления на этот день.');
     return;
   }
 
@@ -161,7 +163,7 @@ export const handleAdminRemoveTime = async (ctx: Context, dayOfWeek: number) => 
     [Markup.button.callback(CrossfitTypesText.CLOSE, CrossfitTypes.CLOSE)],
   );
 
-  await ctx.editMessageText('Выберите время для удаления:', Markup.inlineKeyboard(buttons));
+  await safeEditOrReply(ctx, 'Выберите время для удаления:', Markup.inlineKeyboard(buttons));
 };
 
 export const handleAdminRemoveDay = async (ctx: Context, dayOfWeek: number) => {
@@ -171,29 +173,60 @@ export const handleAdminRemoveDay = async (ctx: Context, dayOfWeek: number) => {
   });
 
   if (!trainings?.length) {
+    await ctx.answerCbQuery('День уже удалён или не найден');
     return;
   }
-  trainings.forEach(training => {
-    training.users?.forEach(async user => {
-      try {
-        await ctx.telegram.sendMessage(
-          user.userId.toString(),
-          `Отменена тренировка на ${training.time} (${getFormatDate(training.date)})`,
-        );
-      } catch {}
-    });
-  });
 
-  await prisma.crossfitTraining.deleteMany({ where: { dayOfWeek } });
-  await ctx.editMessageText('День удален');
+  // Сформируем карту: trainingId -> { time, date, userIds[] }
+  const notifyMap: {
+    trainingId: number;
+    time: string;
+    date: string;
+    userIds: string[];
+  }[] = trainings.map(training => ({
+    trainingId: training.id,
+    time: training.time,
+    date: training.date,
+    userIds: (training.users || []).map(user => user.userId.toString()),
+  }));
+
+  // 2. Удаляем тренировки (и связанные брони — cascade) в транзакции
+  try {
+    await prisma.$transaction([prisma.crossfitTraining.deleteMany({ where: { dayOfWeek } })]);
+  } catch (err) {
+    console.error('Ошибка при удалении дня:', err);
+    await ctx.answerCbQuery('Не удалось удалить день. Попробуйте позже.');
+    return;
+  }
+
+  // 3. Уведомляем пользователей о каждой отмене (вне транзакции)
+  for (const item of notifyMap) {
+    const { time, date, userIds } = item;
+    const text = `Отменена тренировка на ${time} (${getFormatDate(date)})`;
+    await Promise.all(
+      userIds.map(async uid => {
+        try {
+          await ctx.telegram.sendMessage(uid, text);
+        } catch (err) {
+          // Логируем, но не мешаем основному потоку
+          console.error(`Не удалось уведомить пользователя ${uid}:`, err);
+        }
+      }),
+    );
+  }
+
+  await safeEditOrReply(ctx, 'День удален');
 };
 
 export const addTrainingTime = async (ctx: Context, dayOfWeek: number, time: string) => {
+  // вычисляем ближайшую дату для этого дня недели
   const today = new Date();
   today.setDate(today.getDate() + ((dayOfWeek - today.getDay() + 7) % 7));
+  const dateStr = formatDate(today);
 
+  // защита от дубликатов: проверяем наличие entry с такой датой/time
   const existing = await prisma.crossfitTraining.findFirst({
-    where: { dayOfWeek, time },
+    where: { dayOfWeek, time, date: dateStr },
   });
 
   if (existing) {
@@ -201,15 +234,22 @@ export const addTrainingTime = async (ctx: Context, dayOfWeek: number, time: str
     return;
   }
 
-  await prisma.crossfitTraining.create({
-    data: { date: formatDate(today), dayOfWeek, time, capacity },
-  });
+  try {
+    await prisma.crossfitTraining.create({
+      data: { date: dateStr, dayOfWeek, time, capacity },
+    });
+  } catch (err) {
+    console.error('Ошибка при добавлении времени:', err);
+    await ctx.answerCbQuery('Не удалось добавить время. Попробуйте позже.');
+    return;
+  }
 
-  await ctx.answerCbQuery(`Добавлено время ${time} (${getFormatDate(today.toISOString())})`);
+  await ctx.answerCbQuery(`Добавлено время ${time} (${getFormatDate(dateStr)})`);
 };
 
 export const removeTrainingTime = async (ctx: Context, trainingId: number) => {
-  const training: ITraining | null = await prisma.crossfitTraining.findFirst({
+  // получаем тренировку с пользователями
+  const training: ITraining | null = await prisma.crossfitTraining.findUnique({
     where: { id: trainingId },
     include: { users: true },
   });
@@ -219,16 +259,30 @@ export const removeTrainingTime = async (ctx: Context, trainingId: number) => {
     return;
   }
 
-  training.users?.forEach(async user => {
-    try {
-      await ctx.telegram.sendMessage(
-        user.userId.toString(),
-        `Отменена тренировка на ${training.time} (${getFormatDate(training.date)})`,
-      );
-    } catch {}
-  });
+  const userIds = (training.users || []).map(u => u.userId.toString());
+  const time = training.time;
+  const date = training.date;
 
-  await prisma.crossfitTraining.delete({ where: { id: trainingId } });
+  // удаляем тренировку (и каскадом брони) в транзакции
+  try {
+    await prisma.$transaction([prisma.crossfitTraining.delete({ where: { id: trainingId } })]);
+  } catch (err) {
+    console.error('Ошибка при удалении тренировки:', err);
+    await ctx.answerCbQuery('Не удалось удалить тренировку. Попробуйте позже.');
+    return;
+  }
+
+  // уведомляем пользователей
+  const text = `Отменена тренировка на ${time} (${getFormatDate(date)})`;
+  await Promise.all(
+    userIds.map(async uid => {
+      try {
+        await ctx.telegram.sendMessage(uid, text);
+      } catch (err) {
+        console.error(`Не удалось уведомить пользователя ${uid}:`, err);
+      }
+    }),
+  );
 
   await ctx.answerCbQuery('Тренировка удалена');
 };
@@ -255,9 +309,11 @@ export const handleAdminConfirmAdd = async (ctx: Context, dayOfWeek: number, tim
   const date = new Date();
   const diff = (dayOfWeek + 7 - date.getDay()) % 7;
   date.setDate(date.getDate() + diff);
+  const dateStr = formatDate(date);
 
+  // защита от дублей
   const existing = await prisma.crossfitTraining.findFirst({
-    where: { dayOfWeek, time },
+    where: { dayOfWeek, time, date: dateStr },
   });
 
   if (existing) {
@@ -265,14 +321,20 @@ export const handleAdminConfirmAdd = async (ctx: Context, dayOfWeek: number, tim
     return;
   }
 
-  await prisma.crossfitTraining.create({
-    data: {
-      date: formatDate(date),
-      dayOfWeek,
-      time,
-      capacity,
-    },
-  });
+  try {
+    await prisma.crossfitTraining.create({
+      data: {
+        date: dateStr,
+        dayOfWeek,
+        time,
+        capacity,
+      },
+    });
+  } catch (err) {
+    console.error('Ошибка при создании времени:', err);
+    await ctx.answerCbQuery('Не удалось добавить время. Попробуйте позже.');
+    return;
+  }
 
   await ctx.answerCbQuery(`Добавлено время ${time} (${getDayName(dayOfWeek)})`);
 };
