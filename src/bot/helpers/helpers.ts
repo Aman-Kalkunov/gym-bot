@@ -5,6 +5,7 @@ import { InlineKeyboardMarkup, User } from 'telegraf/typings/core/types/typegram
 
 import { Markup } from 'telegraf/typings/markup';
 import { mainInfoText } from '../../constants/text/text';
+import { ITraining } from '../../types/types';
 
 export const sayHello = () => async (ctx: Context) => {
   await ctx.reply(mainInfoText.startText);
@@ -74,4 +75,18 @@ export const safeEditOrReply = async (
   } catch {
     await ctx.reply(text, keyBoard);
   }
+};
+
+export const buildDayMessage = (trainingsOfDay: ITraining[]) => {
+  const dayName = trainingsOfDay.length ? getFormatDate(trainingsOfDay[0].date) : '';
+  let message = `<b>${dayName}</b>\n\n`;
+
+  if (trainingsOfDay.length === 0) {
+    message += 'Нет запланированных тренировок.';
+  } else {
+    const list = trainingsOfDay.map(t => `${t.time} — ${t.booked}/${t.capacity} мест`).join('\n');
+    message += list;
+  }
+
+  return message;
 };
