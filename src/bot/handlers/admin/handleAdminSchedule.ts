@@ -40,12 +40,8 @@ export const handleAdminSchedule = async (ctx: Context) => {
     Markup.button.callback(day, `${AdminButtons.ADMIN_DAY}_${id}`),
   ]);
 
-  buttons.push([
-    Markup.button.callback(AdminButtonsText.ADMIN_ADD_DAY, AdminButtons.ADMIN_ADD_DAY),
-  ]);
-
   buttons.push(
-    [Markup.button.callback(AdminButtonsText.ADMIN_BACK, AdminButtons.ADMIN_BACK)],
+    [Markup.button.callback(AdminButtonsText.ADMIN_ADD_DAY, AdminButtons.ADMIN_ADD_DAY)],
     [Markup.button.callback(CrossfitTypesText.CLOSE, CrossfitTypes.CLOSE)],
   );
 
@@ -61,6 +57,12 @@ export const handleAdminScheduleDay = async (ctx: Context, dayOfWeek: number) =>
   const message = buildDayMessage(trainingsOfDay);
 
   const buttons = [
+    [
+      Markup.button.callback(
+        AdminButtonsText.ADMIN_BOOKINGS,
+        `${AdminButtons.ADMIN_BOOKINGS}_${dayOfWeek}`,
+      ),
+    ],
     [
       Markup.button.callback(
         AdminButtonsText.ADMIN_ADD_TIME,
@@ -133,9 +135,22 @@ export const handleAdminAddTime = async (ctx: Context, dayOfWeek: number) => {
     return;
   }
 
-  const buttons = available.map(time => [
-    Markup.button.callback(time, `${AdminButtons.ADMIN_SELECT_ADD_TIME}_${dayOfWeek}_${time}`),
-  ]);
+  const buttons = available.reduce(
+    (acc, time, i) => {
+      const btn = Markup.button.callback(
+        time,
+        `${AdminButtons.ADMIN_SELECT_ADD_TIME}_${dayOfWeek}_${time}`,
+      );
+      const chunkIndex = Math.floor(i / 3);
+      if (!acc[chunkIndex]) {
+        acc[chunkIndex] = [];
+      }
+      acc[chunkIndex].push(btn);
+      return acc;
+    },
+    [] as ReturnType<typeof Markup.button.callback>[][],
+  );
+
   buttons.push(
     [Markup.button.callback(AdminButtonsText.ADMIN_BACK, `${AdminButtons.ADMIN_DAY}_${dayOfWeek}`)],
     [Markup.button.callback(CrossfitTypesText.CLOSE, CrossfitTypes.CLOSE)],
@@ -155,9 +170,22 @@ export const handleAdminRemoveTime = async (ctx: Context, dayOfWeek: number) => 
     return;
   }
 
-  const buttons = trainings.map(t => [
-    Markup.button.callback(`${t.time}`, `${AdminButtons.ADMIN_SELECT_REMOVE_TIME}_${t.id}`),
-  ]);
+  const buttons = trainings.reduce(
+    (acc, time, i) => {
+      const btn = Markup.button.callback(
+        `${time.time}`,
+        `${AdminButtons.ADMIN_SELECT_REMOVE_TIME}_${time.id}`,
+      );
+      const chunkIndex = Math.floor(i / 3);
+      if (!acc[chunkIndex]) {
+        acc[chunkIndex] = [];
+      }
+      acc[chunkIndex].push(btn);
+      return acc;
+    },
+    [] as ReturnType<typeof Markup.button.callback>[][],
+  );
+
   buttons.push(
     [Markup.button.callback(AdminButtonsText.ADMIN_BACK, `${AdminButtons.ADMIN_DAY}_${dayOfWeek}`)],
     [Markup.button.callback(CrossfitTypesText.CLOSE, CrossfitTypes.CLOSE)],
@@ -290,9 +318,21 @@ export const removeTrainingTime = async (ctx: Context, trainingId: number) => {
 export const handleAdminSelectTime = async (ctx: Context, dayOfWeek: number) => {
   const times = CROSS_FIT_ALL_TIME;
 
-  const buttons = times.map(time => [
-    Markup.button.callback(time, `${AdminButtons.ADMIN_CONFIRM_ADD}_${dayOfWeek}_${time}`),
-  ]);
+  const buttons = times.reduce(
+    (acc, time, i) => {
+      const btn = Markup.button.callback(
+        time,
+        `${AdminButtons.ADMIN_CONFIRM_ADD}_${dayOfWeek}_${time}`,
+      );
+      const chunkIndex = Math.floor(i / 3);
+      if (!acc[chunkIndex]) {
+        acc[chunkIndex] = [];
+      }
+      acc[chunkIndex].push(btn);
+      return acc;
+    },
+    [] as ReturnType<typeof Markup.button.callback>[][],
+  );
 
   buttons.push(
     [Markup.button.callback(AdminButtonsText.ADMIN_BACK, AdminButtons.ADMIN_SCHEDULE)],
