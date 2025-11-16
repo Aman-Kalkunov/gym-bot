@@ -19,14 +19,15 @@ import {
   handleAdminConfirmAdd,
   handleAdminRemoveDay,
   handleAdminRemoveTime,
+  handleAdminSchedule,
   handleAdminScheduleDay,
   handleAdminSelectTime,
   removeTrainingTime,
 } from '../handlers/admin/handleAdminSchedule';
 
-import { adminButtons } from '../keyboards/adminButtons';
 import { scheduleButtons } from '../keyboards/scheduleButtons';
 
+import { handleAdminBookings } from '../handlers/admin/handleAdminBookings';
 import { handleWeightliftingDay } from '../handlers/schedule/handleWeightlifting';
 
 export const routes: Route[] = [
@@ -51,14 +52,6 @@ export const routes: Route[] = [
     match: d => d === CrossfitTypes.CROSS_FIT_DAY_BACK,
     handler: async ctx => {
       await ctx.editMessageText('Выберите тип тренировки', scheduleButtons);
-      await ctx.answerCbQuery();
-    },
-  },
-
-  {
-    match: d => d === AdminButtons.ADMIN_BACK,
-    handler: async ctx => {
-      await ctx.editMessageText('Выберите действие', adminButtons);
       await ctx.answerCbQuery();
     },
   },
@@ -181,8 +174,6 @@ export const routes: Route[] = [
   {
     match: d => d.startsWith(`${AdminButtons.ADMIN_SELECT_ADD_TIME}_`),
     handler: async ctx => {
-      console.log(ctx.callbackQuery.data);
-
       const [, , , , day, time] = ctx.callbackQuery.data.split('_');
       const dayOfWeek = Number(day);
       if (Number.isNaN(dayOfWeek)) {
@@ -227,6 +218,28 @@ export const routes: Route[] = [
         return ctx.answerCbQuery('Ошибка');
       }
       await handleAdminRemoveDay(ctx, day);
+      await ctx.answerCbQuery();
+    },
+  },
+
+  // ADMIN — SCHEDULE ROOT
+  {
+    match: d => d === AdminButtons.ADMIN_SCHEDULE,
+    handler: async ctx => {
+      await handleAdminSchedule(ctx);
+      await ctx.answerCbQuery();
+    },
+  },
+
+  {
+    match: d => d.startsWith(`${AdminButtons.ADMIN_BOOKINGS}_`),
+    handler: async ctx => {
+      const dayOfWeek = Number(ctx.callbackQuery.data.split('_')[2]);
+      if (Number.isNaN(dayOfWeek)) {
+        return ctx.answerCbQuery('Ошибка');
+      }
+      await ctx.editMessageReplyMarkup(undefined);
+      await handleAdminBookings(ctx, dayOfWeek);
       await ctx.answerCbQuery();
     },
   },

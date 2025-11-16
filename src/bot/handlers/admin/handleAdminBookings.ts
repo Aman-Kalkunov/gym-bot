@@ -4,14 +4,14 @@ import { getFormatDate } from '../../../bot/helpers/helpers';
 import { prisma } from '../../../db';
 import { ITraining } from '../../../types/types';
 
-export const handleAdminBookings = async (ctx: Context) => {
+export const handleAdminBookings = async (ctx: Context, dayOfWeek: number) => {
   const trainings: ITraining[] | null = await prisma.crossfitTraining.findMany({
-    where: { users: { some: {} } },
+    where: { users: { some: {} }, dayOfWeek },
     include: { users: true },
     orderBy: [{ date: 'asc' }, { time: 'asc' }],
   });
 
-  if (!trainings) {
+  if (!trainings?.length) {
     await ctx.reply('Нет записей');
     return;
   }
