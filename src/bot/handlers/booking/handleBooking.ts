@@ -96,15 +96,7 @@ export const handleCancelBooking = async (
   }
 
   try {
-    await prisma.$transaction([
-      prisma.booking.delete({ where: { id: bookingId } }),
-      prisma.crossfitTraining.update({
-        where: { id: booking.trainingId },
-        data: {
-          booked: { decrement: 1 },
-        },
-      }),
-    ]);
+    await prisma.$transaction([prisma.booking.delete({ where: { id: bookingId } })]);
   } catch (err) {
     console.error('Ошибка транзакции при отмене записи:', err);
     await safeEditOrReply(ctx, 'Не удалось отменить запись. Попробуйте позже.');
