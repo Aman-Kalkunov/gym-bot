@@ -150,10 +150,6 @@ export const handleCrossfitTime = async (
           trainingId,
         },
       }),
-      prisma.crossfitTraining.update({
-        where: { id: trainingId },
-        data: { booked: { increment: 1 } },
-      }),
     ]);
   } catch (err) {
     console.error('Ошибка транзакции при записи:', err);
