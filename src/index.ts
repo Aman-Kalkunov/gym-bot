@@ -51,7 +51,7 @@ bot.telegram.setMyCommands(devCommands, {
   }
 })();
 
-setupInfoHandlers(bot, adminId, devId);
+setupInfoHandlers(bot, adminId);
 setupScheduleHandlers(bot);
 setupBookingHandlers(bot);
 setupAdminHandlers(bot);

@@ -100,12 +100,7 @@ export const handleCrossfitDay = async (
   }
 };
 
-export const handleCrossfitTime = async (
-  ctx: Context,
-  trainingId: number,
-  adminId: string,
-  devId: string,
-) => {
+export const handleCrossfitTime = async (ctx: Context, trainingId: number, adminId: string) => {
   const user = ctx.from;
   if (!user) {
     return;
@@ -167,10 +162,7 @@ export const handleCrossfitTime = async (
   )})`;
 
   try {
-    await Promise.all([
-      ctx.telegram.sendMessage(adminId, msg),
-      ctx.telegram.sendMessage(devId, msg),
-    ]);
+    await ctx.telegram.sendMessage(adminId, msg);
   } catch (err) {
     console.error('Ошибка отправки уведомления администратору:', err);
   }

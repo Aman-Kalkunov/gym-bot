@@ -81,7 +81,7 @@ export const routes: Route[] = [
     handler: async ctx => {
       const trainingId = Number(ctx.callbackQuery.data.split('_')[3]);
       if (Number.isNaN(trainingId)) return ctx.answerCbQuery('Некорректное время');
-      await handleCrossfitTime(ctx, trainingId, process.env.ADMIN_ID!, process.env.DEV_ID!);
+      await handleCrossfitTime(ctx, trainingId, process.env.ADMIN_ID!);
       await ctx.answerCbQuery();
     },
   },
@@ -106,7 +106,7 @@ export const routes: Route[] = [
       if (Number.isNaN(id)) {
         return ctx.answerCbQuery('Ошибка');
       }
-      await handleCancelBooking(ctx, id, process.env.ADMIN_ID!, process.env.DEV_ID!);
+      await handleCancelBooking(ctx, id, process.env.ADMIN_ID!);
       await ctx.answerCbQuery();
     },
   },
