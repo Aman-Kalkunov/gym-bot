@@ -13,6 +13,10 @@ export const setupCrossfitAutoUpdate = () => {
     tomorrow.setDate(today.getDate() + 1);
     const tomorrowStr = formatDate(tomorrow);
 
+    const nextWeekDay = new Date(today);
+    nextWeekDay.setDate(today.getDate() + 7);
+    const nextWeekDayStr = formatDate(nextWeekDay);
+
     // Удаляем ВСЕ старые тренировки и брони в транзакции
     await prisma.$transaction([
       prisma.booking.deleteMany({
@@ -27,17 +31,17 @@ export const setupCrossfitAutoUpdate = () => {
       }),
     ]);
 
-    // Проверяем, есть ли уже тренировки на завтра
+    // Проверяем, есть ли уже тренировки на одноименный день следующей недели
     const existing: ITraining[] | null = await prisma.crossfitTraining.findMany({
-      where: { date: tomorrowStr },
+      where: { date: nextWeekDayStr },
     });
 
     if (existing?.length > 0) {
-      console.log(`Тренировки на ${tomorrowStr} уже существуют`);
+      console.log(`Тренировки на ${nextWeekDayStr} уже существуют`);
       return;
     }
 
-    const dow = tomorrow.getDay();
+    const dow = nextWeekDay.getDay();
     const times = CROSS_FIT_SCHEDULE[dow];
 
     if (!times || times.length === 0) {
@@ -45,12 +49,11 @@ export const setupCrossfitAutoUpdate = () => {
       return;
     }
 
-    // Создаём новые тренировки последовательно или через Promise.all
     await prisma.$transaction(
       times.map(time =>
         prisma.crossfitTraining.create({
           data: {
-            date: tomorrowStr,
+            date: nextWeekDayStr,
             dayOfWeek: dow,
             time,
             capacity,
@@ -59,6 +62,6 @@ export const setupCrossfitAutoUpdate = () => {
       ),
     );
 
-    console.log(`Добавлены тренировки на ${tomorrowStr}`);
+    console.log(`Добавлены тренировки на ${nextWeekDayStr}`);
   });
 };

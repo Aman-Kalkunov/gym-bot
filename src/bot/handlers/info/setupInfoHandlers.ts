@@ -7,7 +7,7 @@ import { infoButtons } from '../../keyboards/infoButtons';
 
 const waitingForQuestion = new Map<number, NodeJS.Timeout>();
 
-export const setupInfoHandlers = (bot: Telegraf<Context>, adminId: string, devId: string) => {
+export const setupInfoHandlers = (bot: Telegraf<Context>, adminId: string) => {
   bot.command('info', async ctx => {
     await ctx.reply('Информация', infoButtons);
   });
@@ -104,8 +104,9 @@ export const setupInfoHandlers = (bot: Telegraf<Context>, adminId: string, devId
 
       try {
         await ctx.telegram.sendMessage(adminId, `Вопрос от ${userName}:\n\n${text}`);
-        await ctx.telegram.sendMessage(devId, `Вопрос от ${userName}:\n\n${text}`);
-      } catch {}
+      } catch (err) {
+        console.error('Ошибка при отправке уведомления администратору:', err);
+      }
 
       clearTimeout(timer);
       waitingForQuestion.delete(userId);

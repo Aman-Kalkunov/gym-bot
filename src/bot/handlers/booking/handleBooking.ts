@@ -76,12 +76,7 @@ export const handleBookingInfo = async (ctx: Context, bookingId: number) => {
   );
 };
 
-export const handleCancelBooking = async (
-  ctx: Context,
-  bookingId: number,
-  adminId: string,
-  devId: string,
-) => {
+export const handleCancelBooking = async (ctx: Context, bookingId: number, adminId: string) => {
   const user = ctx.from;
 
   const booking = await prisma.booking.findUnique({
@@ -116,10 +111,7 @@ export const handleCancelBooking = async (
     const msg = `${userName} отменил(-а) запись на CrossFit: ${time} (${date})`;
 
     try {
-      await Promise.all([
-        ctx.telegram.sendMessage(adminId, msg),
-        ctx.telegram.sendMessage(devId, msg),
-      ]);
+      await ctx.telegram.sendMessage(adminId, msg);
     } catch (err) {
       console.error('Ошибка при отправке уведомления администратору:', err);
     }
