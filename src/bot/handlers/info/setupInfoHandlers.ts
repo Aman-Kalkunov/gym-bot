@@ -101,9 +101,10 @@ export const setupInfoHandlers = (bot: Telegraf<Context>, adminId: string) => {
 
       const text = ctx.message.text.trim();
       const userName = getUserName(ctx.from);
+      const link = `tg://user?id=${ctx.from.id}`;
 
       try {
-        await ctx.telegram.sendMessage(adminId, `Вопрос от ${userName}:\n\n${text}`);
+        await ctx.telegram.sendMessage(adminId, `Вопрос от ${userName}:\n${link}\n\n${text}`);
       } catch (err) {
         console.error('Ошибка при отправке уведомления администратору:', err);
       }
