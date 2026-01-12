@@ -5,7 +5,7 @@ import { prisma } from '../../../db';
 import { ITraining } from '../../../types/types';
 
 export const handleAdminBookings = async (ctx: Context, dayOfWeek: number) => {
-  const trainings: ITraining[] | null = await prisma.crossfitTraining.findMany({
+  const trainings: ITraining[] | null = await prisma.training.findMany({
     where: { users: { some: {} }, dayOfWeek },
     include: { users: true },
     orderBy: [{ date: 'asc' }, { time: 'asc' }],

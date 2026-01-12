@@ -1,5 +1,6 @@
 import cron from 'node-cron';
 
+import { TrainingType } from '@prisma/client';
 import { prisma } from '../../db';
 import { CROSS_FIT_SCHEDULE, ITraining, CAPACITY as capacity } from '../../types/types';
 import { formatDate } from './helpers';
@@ -26,13 +27,13 @@ export const setupCrossfitAutoUpdate = () => {
           },
         },
       }),
-      prisma.crossfitTraining.deleteMany({
+      prisma.training.deleteMany({
         where: { date: { lt: tomorrowStr } },
       }),
     ]);
 
     // Проверяем, есть ли уже тренировки на одноименный день следующей недели
-    const existing: ITraining[] | null = await prisma.crossfitTraining.findMany({
+    const existing: ITraining[] | null = await prisma.training.findMany({
       where: { date: nextWeekDayStr },
     });
 
@@ -51,12 +52,13 @@ export const setupCrossfitAutoUpdate = () => {
 
     await prisma.$transaction(
       times.map(time =>
-        prisma.crossfitTraining.create({
+        prisma.training.create({
           data: {
             date: nextWeekDayStr,
             dayOfWeek: dow,
             time,
             capacity,
+            type: TrainingType.CROSSFIT,
           },
         }),
       ),

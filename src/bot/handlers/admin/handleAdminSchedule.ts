@@ -1,5 +1,6 @@
 import { Context, Markup } from 'telegraf';
 
+import { TrainingType } from '@prisma/client';
 import {
   buildDayMessage,
   formatDate,
@@ -19,7 +20,7 @@ import {
 } from '../../../types/types';
 
 export const handleAdminSchedule = async (ctx: Context) => {
-  const trainings: ITraining[] | null = await prisma.crossfitTraining.findMany({
+  const trainings: ITraining[] | null = await prisma.training.findMany({
     orderBy: { date: 'asc' },
   });
 
@@ -49,7 +50,7 @@ export const handleAdminSchedule = async (ctx: Context) => {
 };
 
 export const handleAdminScheduleDay = async (ctx: Context, dayOfWeek: number) => {
-  const trainingsOfDay: ITraining[] | null = await prisma.crossfitTraining.findMany({
+  const trainingsOfDay: ITraining[] | null = await prisma.training.findMany({
     where: { dayOfWeek },
     orderBy: { time: 'asc' },
   });
@@ -92,7 +93,7 @@ export const handleAdminScheduleDay = async (ctx: Context, dayOfWeek: number) =>
 };
 
 export const handleAdminAddDay = async (ctx: Context) => {
-  const existingDays: ITraining[] | null = await prisma.crossfitTraining.findMany();
+  const existingDays: ITraining[] | null = await prisma.training.findMany();
   if (!existingDays) {
     return;
   }
@@ -120,7 +121,7 @@ export const handleAdminAddDay = async (ctx: Context) => {
 export const handleAdminAddTime = async (ctx: Context, dayOfWeek: number) => {
   const times = CROSS_FIT_ALL_TIME;
 
-  const trainingsOfDay: ITraining[] | null = await prisma.crossfitTraining.findMany({
+  const trainingsOfDay: ITraining[] | null = await prisma.training.findMany({
     where: { dayOfWeek },
   });
   if (!trainingsOfDay) {
@@ -160,7 +161,7 @@ export const handleAdminAddTime = async (ctx: Context, dayOfWeek: number) => {
 };
 
 export const handleAdminRemoveTime = async (ctx: Context, dayOfWeek: number) => {
-  const trainings: ITraining[] | null = await prisma.crossfitTraining.findMany({
+  const trainings: ITraining[] | null = await prisma.training.findMany({
     where: { dayOfWeek },
     orderBy: { time: 'asc' },
   });
@@ -195,7 +196,7 @@ export const handleAdminRemoveTime = async (ctx: Context, dayOfWeek: number) => 
 };
 
 export const handleAdminRemoveDay = async (ctx: Context, dayOfWeek: number) => {
-  const trainings: ITraining[] | null = await prisma.crossfitTraining.findMany({
+  const trainings: ITraining[] | null = await prisma.training.findMany({
     where: { dayOfWeek },
     include: { users: true },
   });
@@ -220,7 +221,7 @@ export const handleAdminRemoveDay = async (ctx: Context, dayOfWeek: number) => {
 
   // 2. Удаляем тренировки (и связанные брони — cascade) в транзакции
   try {
-    await prisma.$transaction([prisma.crossfitTraining.deleteMany({ where: { dayOfWeek } })]);
+    await prisma.$transaction([prisma.training.deleteMany({ where: { dayOfWeek } })]);
   } catch (err) {
     console.error('Ошибка при удалении дня:', err);
     await ctx.answerCbQuery('Не удалось удалить день. Попробуйте позже.');
@@ -253,7 +254,7 @@ export const addTrainingTime = async (ctx: Context, dayOfWeek: number, time: str
   const dateStr = formatDate(today);
 
   // защита от дубликатов: проверяем наличие entry с такой датой/time
-  const existing = await prisma.crossfitTraining.findFirst({
+  const existing = await prisma.training.findFirst({
     where: { dayOfWeek, time, date: dateStr },
   });
 
@@ -263,8 +264,8 @@ export const addTrainingTime = async (ctx: Context, dayOfWeek: number, time: str
   }
 
   try {
-    await prisma.crossfitTraining.create({
-      data: { date: dateStr, dayOfWeek, time, capacity },
+    await prisma.training.create({
+      data: { date: dateStr, dayOfWeek, time, capacity, type: TrainingType.CROSSFIT },
     });
   } catch (err) {
     console.error('Ошибка при добавлении времени:', err);
@@ -277,7 +278,7 @@ export const addTrainingTime = async (ctx: Context, dayOfWeek: number, time: str
 
 export const removeTrainingTime = async (ctx: Context, trainingId: number) => {
   // получаем тренировку с пользователями
-  const training: ITraining | null = await prisma.crossfitTraining.findUnique({
+  const training: ITraining | null = await prisma.training.findUnique({
     where: { id: trainingId },
     include: { users: true },
   });
@@ -293,7 +294,7 @@ export const removeTrainingTime = async (ctx: Context, trainingId: number) => {
 
   // удаляем тренировку (и каскадом брони) в транзакции
   try {
-    await prisma.$transaction([prisma.crossfitTraining.delete({ where: { id: trainingId } })]);
+    await prisma.$transaction([prisma.training.delete({ where: { id: trainingId } })]);
   } catch (err) {
     console.error('Ошибка при удалении тренировки:', err);
     await ctx.answerCbQuery('Не удалось удалить тренировку. Попробуйте позже.');
@@ -352,7 +353,7 @@ export const handleAdminConfirmAdd = async (ctx: Context, dayOfWeek: number, tim
   const dateStr = formatDate(date);
 
   // защита от дублей
-  const existing = await prisma.crossfitTraining.findFirst({
+  const existing = await prisma.training.findFirst({
     where: { dayOfWeek, time, date: dateStr },
   });
 
@@ -362,12 +363,13 @@ export const handleAdminConfirmAdd = async (ctx: Context, dayOfWeek: number, tim
   }
 
   try {
-    await prisma.crossfitTraining.create({
+    await prisma.training.create({
       data: {
         date: dateStr,
         dayOfWeek,
         time,
         capacity,
+        type: TrainingType.CROSSFIT,
       },
     });
   } catch (err) {

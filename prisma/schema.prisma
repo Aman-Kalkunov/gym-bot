@@ -7,8 +7,14 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-model CrossfitTraining {
+enum TrainingType {
+  CROSSFIT
+  BACK
+}
+
+model Training {
   id        Int      @id @default(autoincrement())
+  type      TrainingType
   date      String
   dayOfWeek Int
   time      String
@@ -23,7 +29,7 @@ model Booking {
   userName    String
   userNick    String?
   trainingId  Int
-  training    CrossfitTraining  @relation(fields: [trainingId], references: [id], onDelete: Cascade)
+  training    Training  @relation(fields: [trainingId], references: [id], onDelete: Cascade)
   createdAt   DateTime  @default(now())
 }
 

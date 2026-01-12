@@ -1,10 +1,11 @@
+import { TrainingType } from '@prisma/client';
 import { prisma } from '../../db';
 
 import { CROSS_FIT_SCHEDULE, CAPACITY as capacity } from '../../types/types';
 import { formatDate } from './helpers';
 
 export const initCrossfitSchedule = async () => {
-  const count: number = await prisma.crossfitTraining.count();
+  const count: number = await prisma.training.count();
 
   if (count > 0) {
     return;
@@ -21,8 +22,9 @@ export const initCrossfitSchedule = async () => {
     const times = CROSS_FIT_SCHEDULE[dayOfWeek];
 
     for (const time of times) {
-      await prisma.crossfitTraining.create({
+      await prisma.training.create({
         data: {
+          type: TrainingType.CROSSFIT,
           date: dateStr,
           dayOfWeek,
           time,
