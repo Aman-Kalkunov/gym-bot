@@ -1,3 +1,5 @@
+import { TrainingType } from '@prisma/client';
+
 export const CAPACITY = 12;
 
 export enum BotCommand {
@@ -82,6 +84,7 @@ export const CROSS_FIT_ALL_TIME = [
 
 export interface ITraining {
   id: number;
+  type: TrainingType;
   date: string;
   dayOfWeek: number;
   time: string;

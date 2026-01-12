@@ -22,7 +22,7 @@ export const handleCrossfit = async (ctx: Context, messageType: MessageType) => 
   const yesterday = new Date(now);
   yesterday.setDate(now.getDate() - 1);
 
-  const trainings: ITraining[] | null = await prisma.crossfitTraining.findMany({
+  const trainings: ITraining[] | null = await prisma.training.findMany({
     where: { date: { gte: formatDate(yesterday) } },
     orderBy: [{ date: 'asc' }, { time: 'asc' }],
   });
@@ -66,7 +66,7 @@ export const handleCrossfitDay = async (
   dayOfWeek: number,
   messageType: MessageType,
 ) => {
-  const trainings: ITraining[] | null = await prisma.crossfitTraining.findMany({
+  const trainings: ITraining[] | null = await prisma.training.findMany({
     where: { dayOfWeek },
     orderBy: { time: 'asc' },
   });
@@ -108,7 +108,7 @@ export const handleCrossfitTime = async (ctx: Context, trainingId: number, admin
 
   const userName = getUserName(user);
 
-  const training: ITraining | null = await prisma.crossfitTraining.findUnique({
+  const training: ITraining | null = await prisma.training.findUnique({
     where: { id: trainingId },
   });
 
