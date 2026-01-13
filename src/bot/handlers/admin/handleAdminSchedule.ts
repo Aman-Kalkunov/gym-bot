@@ -19,13 +19,24 @@ import {
   ITraining,
 } from '../../../types/types';
 
-export const handleAdminSchedule = async (ctx: Context) => {
+export const handleAdminSchedule = async (ctx: Context, type: TrainingType) => {
   const trainings: ITraining[] | null = await prisma.training.findMany({
+    where: { type },
     orderBy: { date: 'asc' },
   });
 
   if (!trainings?.length) {
-    await safeEditOrReply(ctx, 'Расписание пустое.');
+    const buttons = [
+      [
+        Markup.button.callback(
+          AdminButtonsText.ADMIN_ADD_DAY,
+          `${AdminButtons.ADMIN_ADD_DAY}_${type}`,
+        ),
+      ],
+      [Markup.button.callback(CrossfitTypesText.CLOSE, CrossfitTypes.CLOSE)],
+    ];
+
+    await safeEditOrReply(ctx, 'Расписание пустое.', Markup.inlineKeyboard(buttons));
     return;
   }
 
@@ -38,20 +49,29 @@ export const handleAdminSchedule = async (ctx: Context) => {
   }, {});
 
   const buttons = Object.entries(days).map(([day, id]) => [
-    Markup.button.callback(day, `${AdminButtons.ADMIN_DAY}_${id}`),
+    Markup.button.callback(day, `${AdminButtons.ADMIN_DAY}_${id}_${type}`),
   ]);
 
   buttons.push(
-    [Markup.button.callback(AdminButtonsText.ADMIN_ADD_DAY, AdminButtons.ADMIN_ADD_DAY)],
+    [
+      Markup.button.callback(
+        AdminButtonsText.ADMIN_ADD_DAY,
+        `${AdminButtons.ADMIN_ADD_DAY}_${type}`,
+      ),
+    ],
     [Markup.button.callback(CrossfitTypesText.CLOSE, CrossfitTypes.CLOSE)],
   );
 
   await safeEditOrReply(ctx, AdminButtonsText.ADMIN_SCHEDULE, Markup.inlineKeyboard(buttons));
 };
 
-export const handleAdminScheduleDay = async (ctx: Context, dayOfWeek: number) => {
+export const handleAdminScheduleDay = async (
+  ctx: Context,
+  dayOfWeek: number,
+  type: TrainingType,
+) => {
   const trainingsOfDay: ITraining[] | null = await prisma.training.findMany({
-    where: { dayOfWeek },
+    where: { dayOfWeek, type },
     orderBy: { time: 'asc' },
   });
 
@@ -61,28 +81,28 @@ export const handleAdminScheduleDay = async (ctx: Context, dayOfWeek: number) =>
     [
       Markup.button.callback(
         AdminButtonsText.ADMIN_BOOKINGS,
-        `${AdminButtons.ADMIN_BOOKINGS}_${dayOfWeek}`,
+        `${AdminButtons.ADMIN_BOOKINGS}_${dayOfWeek}_${type}`,
       ),
     ],
     [
       Markup.button.callback(
         AdminButtonsText.ADMIN_ADD_TIME,
-        `${AdminButtons.ADMIN_ADD_TIME}_${dayOfWeek}`,
+        `${AdminButtons.ADMIN_ADD_TIME}_${dayOfWeek}_${type}`,
       ),
     ],
     [
       Markup.button.callback(
         AdminButtonsText.ADMIN_REMOVE_TIME,
-        `${AdminButtons.ADMIN_REMOVE_TIME}_${dayOfWeek}`,
+        `${AdminButtons.ADMIN_REMOVE_TIME}_${dayOfWeek}_${type}`,
       ),
     ],
     [
       Markup.button.callback(
         AdminButtonsText.ADMIN_REMOVE_DAY,
-        `${AdminButtons.ADMIN_REMOVE_DAY}_${dayOfWeek}`,
+        `${AdminButtons.ADMIN_REMOVE_DAY}_${dayOfWeek}_${type}`,
       ),
     ],
-    [Markup.button.callback(AdminButtonsText.ADMIN_BACK, AdminButtons.ADMIN_SCHEDULE)],
+    [Markup.button.callback(AdminButtonsText.ADMIN_BACK, `${AdminButtons.ADMIN_SCHEDULE}_${type}`)],
     [Markup.button.callback(CrossfitTypesText.CLOSE, CrossfitTypes.CLOSE)],
   ];
 
@@ -92,8 +112,10 @@ export const handleAdminScheduleDay = async (ctx: Context, dayOfWeek: number) =>
   });
 };
 
-export const handleAdminAddDay = async (ctx: Context) => {
-  const existingDays: ITraining[] | null = await prisma.training.findMany();
+export const handleAdminAddDay = async (ctx: Context, type: TrainingType) => {
+  const existingDays: ITraining[] | null = await prisma.training.findMany({
+    where: { type },
+  });
   if (!existingDays) {
     return;
   }
@@ -108,21 +130,21 @@ export const handleAdminAddDay = async (ctx: Context) => {
   }
 
   const buttons = availableDays.map(day => [
-    Markup.button.callback(getDayName(day), `${AdminButtons.ADMIN_SELECT_DAY}_${day}`),
+    Markup.button.callback(getDayName(day), `${AdminButtons.ADMIN_SELECT_DAY}_${day}_${type}`),
   ]);
   buttons.push(
-    [Markup.button.callback(AdminButtonsText.ADMIN_BACK, AdminButtons.ADMIN_SCHEDULE)],
+    [Markup.button.callback(AdminButtonsText.ADMIN_BACK, `${AdminButtons.ADMIN_SCHEDULE}_${type}`)],
     [Markup.button.callback(CrossfitTypesText.CLOSE, CrossfitTypes.CLOSE)],
   );
 
   await safeEditOrReply(ctx, 'Выберите день для добавления:', Markup.inlineKeyboard(buttons));
 };
 
-export const handleAdminAddTime = async (ctx: Context, dayOfWeek: number) => {
+export const handleAdminAddTime = async (ctx: Context, dayOfWeek: number, type: TrainingType) => {
   const times = CROSS_FIT_ALL_TIME;
 
   const trainingsOfDay: ITraining[] | null = await prisma.training.findMany({
-    where: { dayOfWeek },
+    where: { dayOfWeek, type },
   });
   if (!trainingsOfDay) {
     return;
@@ -140,7 +162,7 @@ export const handleAdminAddTime = async (ctx: Context, dayOfWeek: number) => {
     (acc, time, i) => {
       const btn = Markup.button.callback(
         time,
-        `${AdminButtons.ADMIN_SELECT_ADD_TIME}_${dayOfWeek}_${time}`,
+        `${AdminButtons.ADMIN_SELECT_ADD_TIME}_${dayOfWeek}_${time}_${type}`,
       );
       const chunkIndex = Math.floor(i / 3);
       if (!acc[chunkIndex]) {
@@ -153,16 +175,25 @@ export const handleAdminAddTime = async (ctx: Context, dayOfWeek: number) => {
   );
 
   buttons.push(
-    [Markup.button.callback(AdminButtonsText.ADMIN_BACK, `${AdminButtons.ADMIN_DAY}_${dayOfWeek}`)],
+    [
+      Markup.button.callback(
+        AdminButtonsText.ADMIN_BACK,
+        `${AdminButtons.ADMIN_DAY}_${dayOfWeek}_${type}`,
+      ),
+    ],
     [Markup.button.callback(CrossfitTypesText.CLOSE, CrossfitTypes.CLOSE)],
   );
 
   await safeEditOrReply(ctx, 'Выберите время для добавления:', Markup.inlineKeyboard(buttons));
 };
 
-export const handleAdminRemoveTime = async (ctx: Context, dayOfWeek: number) => {
+export const handleAdminRemoveTime = async (
+  ctx: Context,
+  dayOfWeek: number,
+  type: TrainingType,
+) => {
   const trainings: ITraining[] | null = await prisma.training.findMany({
-    where: { dayOfWeek },
+    where: { dayOfWeek, type },
     orderBy: { time: 'asc' },
   });
 
@@ -188,16 +219,21 @@ export const handleAdminRemoveTime = async (ctx: Context, dayOfWeek: number) => 
   );
 
   buttons.push(
-    [Markup.button.callback(AdminButtonsText.ADMIN_BACK, `${AdminButtons.ADMIN_DAY}_${dayOfWeek}`)],
+    [
+      Markup.button.callback(
+        AdminButtonsText.ADMIN_BACK,
+        `${AdminButtons.ADMIN_DAY}_${dayOfWeek}_${type}`,
+      ),
+    ],
     [Markup.button.callback(CrossfitTypesText.CLOSE, CrossfitTypes.CLOSE)],
   );
 
   await safeEditOrReply(ctx, 'Выберите время для удаления:', Markup.inlineKeyboard(buttons));
 };
 
-export const handleAdminRemoveDay = async (ctx: Context, dayOfWeek: number) => {
+export const handleAdminRemoveDay = async (ctx: Context, dayOfWeek: number, type: TrainingType) => {
   const trainings: ITraining[] | null = await prisma.training.findMany({
-    where: { dayOfWeek },
+    where: { dayOfWeek, type },
     include: { users: true },
   });
 
@@ -221,7 +257,7 @@ export const handleAdminRemoveDay = async (ctx: Context, dayOfWeek: number) => {
 
   // 2. Удаляем тренировки (и связанные брони — cascade) в транзакции
   try {
-    await prisma.$transaction([prisma.training.deleteMany({ where: { dayOfWeek } })]);
+    await prisma.$transaction([prisma.training.deleteMany({ where: { dayOfWeek, type } })]);
   } catch (err) {
     console.error('Ошибка при удалении дня:', err);
     await ctx.answerCbQuery('Не удалось удалить день. Попробуйте позже.');
@@ -247,7 +283,12 @@ export const handleAdminRemoveDay = async (ctx: Context, dayOfWeek: number) => {
   await safeEditOrReply(ctx, 'День удален');
 };
 
-export const addTrainingTime = async (ctx: Context, dayOfWeek: number, time: string) => {
+export const addTrainingTime = async (
+  ctx: Context,
+  dayOfWeek: number,
+  time: string,
+  type: TrainingType,
+) => {
   // вычисляем ближайшую дату для этого дня недели
   const today = new Date();
   today.setDate(today.getDate() + ((dayOfWeek - today.getDay() + 7) % 7));
@@ -255,7 +296,7 @@ export const addTrainingTime = async (ctx: Context, dayOfWeek: number, time: str
 
   // защита от дубликатов: проверяем наличие entry с такой датой/time
   const existing = await prisma.training.findFirst({
-    where: { dayOfWeek, time, date: dateStr },
+    where: { dayOfWeek, time, date: dateStr, type },
   });
 
   if (existing) {
@@ -265,7 +306,7 @@ export const addTrainingTime = async (ctx: Context, dayOfWeek: number, time: str
 
   try {
     await prisma.training.create({
-      data: { date: dateStr, dayOfWeek, time, capacity, type: TrainingType.CROSSFIT },
+      data: { date: dateStr, dayOfWeek, time, capacity, type },
     });
   } catch (err) {
     console.error('Ошибка при добавлении времени:', err);
@@ -316,14 +357,18 @@ export const removeTrainingTime = async (ctx: Context, trainingId: number) => {
   await ctx.answerCbQuery('Тренировка удалена');
 };
 
-export const handleAdminSelectTime = async (ctx: Context, dayOfWeek: number) => {
+export const handleAdminSelectTime = async (
+  ctx: Context,
+  dayOfWeek: number,
+  type: TrainingType,
+) => {
   const times = CROSS_FIT_ALL_TIME;
 
   const buttons = times.reduce(
     (acc, time, i) => {
       const btn = Markup.button.callback(
         time,
-        `${AdminButtons.ADMIN_CONFIRM_ADD}_${dayOfWeek}_${time}`,
+        `${AdminButtons.ADMIN_CONFIRM_ADD}_${dayOfWeek}_${time}_${type}`,
       );
       const chunkIndex = Math.floor(i / 3);
       if (!acc[chunkIndex]) {
@@ -336,7 +381,7 @@ export const handleAdminSelectTime = async (ctx: Context, dayOfWeek: number) => 
   );
 
   buttons.push(
-    [Markup.button.callback(AdminButtonsText.ADMIN_BACK, AdminButtons.ADMIN_SCHEDULE)],
+    [Markup.button.callback(AdminButtonsText.ADMIN_BACK, `${AdminButtons.ADMIN_SCHEDULE}_${type}`)],
     [Markup.button.callback(CrossfitTypesText.CLOSE, CrossfitTypes.CLOSE)],
   );
 
@@ -346,7 +391,12 @@ export const handleAdminSelectTime = async (ctx: Context, dayOfWeek: number) => 
   );
 };
 
-export const handleAdminConfirmAdd = async (ctx: Context, dayOfWeek: number, time: string) => {
+export const handleAdminConfirmAdd = async (
+  ctx: Context,
+  dayOfWeek: number,
+  time: string,
+  type: TrainingType,
+) => {
   const date = new Date();
   const diff = (dayOfWeek + 7 - date.getDay()) % 7;
   date.setDate(date.getDate() + diff);
@@ -354,7 +404,7 @@ export const handleAdminConfirmAdd = async (ctx: Context, dayOfWeek: number, tim
 
   // защита от дублей
   const existing = await prisma.training.findFirst({
-    where: { dayOfWeek, time, date: dateStr },
+    where: { dayOfWeek, time, date: dateStr, type },
   });
 
   if (existing) {
@@ -369,7 +419,7 @@ export const handleAdminConfirmAdd = async (ctx: Context, dayOfWeek: number, tim
         dayOfWeek,
         time,
         capacity,
-        type: TrainingType.CROSSFIT,
+        type,
       },
     });
   } catch (err) {

@@ -7,8 +7,8 @@ import { setupErrorHandlers } from './bot/handlers/error/errorHandler';
 import { setupInfoHandlers } from './bot/handlers/info/setupInfoHandlers';
 import { setupScheduleHandlers } from './bot/handlers/schedule/setupScheduleHandlers';
 import { sayHello } from './bot/helpers/helpers';
-import { initCrossfitSchedule } from './bot/helpers/initCrossfitSchedule';
-import { setupCrossfitAutoUpdate } from './bot/helpers/scheduleMaintenance';
+import { initSchedule } from './bot/helpers/initCrossfitSchedule';
+import { setupAutoUpdate } from './bot/helpers/scheduleMaintenance';
 import { adminCommands, devCommands, mainCommands } from './bot/keyboards/commands';
 import { callbackRouter } from './bot/router/callbackRouter';
 import { prisma } from './db';
@@ -40,8 +40,8 @@ bot.telegram.setMyCommands(devCommands, {
 (async () => {
   try {
     await prisma.$connect();
-    await initCrossfitSchedule();
-    setupCrossfitAutoUpdate();
+    await initSchedule();
+    setupAutoUpdate();
     console.log('Бот работает');
 
     await bot.launch();

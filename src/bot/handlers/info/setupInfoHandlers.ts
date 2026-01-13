@@ -30,7 +30,14 @@ export const setupInfoHandlers = (bot: Telegraf<Context>, adminId: string) => {
 
   bot.action(InfoButtons.INFO_PROMOTIONS, async ctx => {
     await ctx.answerCbQuery();
-    await safeEdit(ctx, mainInfoText.promotionsText, infoButtons);
+    await ctx.editMessageReplyMarkup(undefined);
+    await ctx.replyWithPhoto(
+      { source: './src/assets/promotions.jpg' },
+      {
+        caption: 'Акции и скидки',
+        ...infoButtons,
+      },
+    );
   });
 
   bot.action(InfoButtons.INFO_CONTACTS, async ctx => {

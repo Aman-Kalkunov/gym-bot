@@ -1,12 +1,13 @@
 import { Context } from 'telegraf';
 
+import { TrainingType } from '@prisma/client';
 import { getFormatDate } from '../../../bot/helpers/helpers';
 import { prisma } from '../../../db';
 import { ITraining } from '../../../types/types';
 
-export const handleAdminBookings = async (ctx: Context, dayOfWeek: number) => {
+export const handleAdminBookings = async (ctx: Context, dayOfWeek: number, type: TrainingType) => {
   const trainings: ITraining[] | null = await prisma.training.findMany({
-    where: { users: { some: {} }, dayOfWeek },
+    where: { users: { some: {} }, dayOfWeek, type },
     include: { users: true },
     orderBy: [{ date: 'asc' }, { time: 'asc' }],
   });

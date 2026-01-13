@@ -35,6 +35,16 @@ export enum TrainingTime {
   '22:00' = '22:00',
 }
 
+export const HEALTHY_BACK_SCHEDULE: Record<number, string[]> = {
+  0: [],
+  1: [],
+  2: [],
+  3: [],
+  4: [],
+  5: [],
+  6: [TrainingTime['12:00']],
+};
+
 export const CROSS_FIT_SCHEDULE: Record<number, string[]> = {
   0: [],
   1: [
@@ -116,7 +126,20 @@ export enum CrossfitTypes {
   CLOSE = 'CLOSE',
 }
 
+export enum HealthyBackTypes {
+  HEALTHY_BACK_DAY = 'HEALTHY_BACK_DAY',
+  HEALTHY_BACK_TIME = 'HEALTHY_BACK_TIME',
+  HEALTHY_BACK_BOOKING = 'HEALTHY_BACK_BOOKING',
+  HEALTHY_BACK_TIME_BACK = 'HEALTHY_BACK_TIME_BACK',
+  HEALTHY_BACK_DAY_BACK = 'HEALTHY_BACK_DAY_BACK',
+  CLOSE = 'CLOSE',
+}
+
 export enum CrossfitTypesText {
+  CLOSE = 'Закрыть',
+}
+
+export enum HealthyBackTypesText {
   CLOSE = 'Закрыть',
 }
 
@@ -142,11 +165,13 @@ export enum InfoButtonsText {
 
 export enum ScheduleButtons {
   CROSS_FIT = 'CROSS_FIT',
+  HEALTHY_BACK = 'HEALTHY_BACK',
   WEIGHTLIFTING = 'WEIGHTLIFTING',
 }
 
 export enum ScheduleButtonsText {
   CROSS_FIT = 'Кроссфит',
+  HEALTHY_BACK = 'Здоровая спина',
   WEIGHTLIFTING = 'Тяжелая атлетика',
 }
 
@@ -162,6 +187,8 @@ export enum AdminButtons {
   ADMIN_SELECT_REMOVE_TIME = 'ADMIN_SELECT_REMOVE_TIME',
   ADMIN_REMOVE_DAY = 'ADMIN_REMOVE_DAY',
   ADMIN_BOOKINGS = 'ADMIN_BOOKINGS',
+  ADMIN_CROSS_FIT = 'ADMIN_CROSS_FIT',
+  ADMIN_HEALTHY_BACK = 'ADMIN_HEALTHY_BACK',
 }
 
 export enum AdminButtonsText {
@@ -172,6 +199,8 @@ export enum AdminButtonsText {
   ADMIN_REMOVE_DAY = 'Удалить день',
   ADMIN_BOOKINGS = 'Список записавшихся',
   ADMIN_BACK = 'Назад',
+  ADMIN_CROSS_FIT = 'Кроссфит',
+  ADMIN_HEALTHY_BACK = 'Здоровая спина',
 }
 
 export enum WeightliftingButtons {

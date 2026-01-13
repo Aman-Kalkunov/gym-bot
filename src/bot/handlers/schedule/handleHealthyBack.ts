@@ -4,8 +4,8 @@ import { TrainingType } from '@prisma/client';
 import { prisma } from '../../../db';
 import {
   AdminButtonsText,
-  CrossfitTypes,
-  CrossfitTypesText,
+  HealthyBackTypes,
+  HealthyBackTypesText,
   ITraining,
   MessageType,
 } from '../../../types/types';
@@ -18,7 +18,7 @@ import {
   safeEditOrReply,
 } from '../../helpers/helpers';
 
-export const handleCrossfit = async (ctx: Context, messageType: MessageType) => {
+export const handleHealthyBack = async (ctx: Context, messageType: MessageType) => {
   const now = new Date();
   const yesterday = new Date(now);
   yesterday.setDate(now.getDate() - 1);
@@ -34,7 +34,7 @@ export const handleCrossfit = async (ctx: Context, messageType: MessageType) => 
   }
 
   const daysMap = trainings
-    ?.filter(t => t.type === TrainingType.CROSSFIT)
+    ?.filter(t => t.type === TrainingType.BACK)
     .reduce(
       (acc, training) => {
         const dateKey = getFormatDate(training.date);
@@ -48,13 +48,13 @@ export const handleCrossfit = async (ctx: Context, messageType: MessageType) => 
   const buttons = Object.entries(daysMap).map(([day, slots]) => [
     Markup.button.callback(
       `${day} (${slots.length} ${getSlotWord(slots.length)})`,
-      `${CrossfitTypes.CROSS_FIT_DAY}_${slots[0].dayOfWeek}`,
+      `${HealthyBackTypes.HEALTHY_BACK_DAY}_${slots[0].dayOfWeek}`,
     ),
   ]);
 
   buttons.push(
-    [Markup.button.callback(AdminButtonsText.ADMIN_BACK, CrossfitTypes.CROSS_FIT_DAY_BACK)],
-    [Markup.button.callback(CrossfitTypesText.CLOSE, CrossfitTypes.CLOSE)],
+    [Markup.button.callback(AdminButtonsText.ADMIN_BACK, HealthyBackTypes.HEALTHY_BACK_DAY_BACK)],
+    [Markup.button.callback(HealthyBackTypesText.CLOSE, HealthyBackTypes.CLOSE)],
   );
 
   if (messageType === 'reply') {
@@ -64,7 +64,7 @@ export const handleCrossfit = async (ctx: Context, messageType: MessageType) => 
   }
 };
 
-export const handleCrossfitDay = async (
+export const handleHealthyBackDay = async (
   ctx: Context,
   dayOfWeek: number,
   messageType: MessageType,
@@ -76,26 +76,26 @@ export const handleCrossfitDay = async (
 
   if (!trainings?.length) {
     await safeEditOrReply(ctx, 'Нет доступных тренировок на этот день.');
-    await handleCrossfit(ctx, 'reply');
+    await handleHealthyBack(ctx, 'reply');
     return;
   }
 
   const buttons = trainings
-    .filter(t => t.type === TrainingType.CROSSFIT)
+    .filter(t => t.type === TrainingType.BACK)
     .map(slot => {
       const free = slot.capacity - slot.booked;
 
       return [
         Markup.button.callback(
           `${slot.time} ${free > 0 ? `(${free} ${getPlacesWord(free)})` : '(Нет мест)'}`,
-          free > 0 ? `${CrossfitTypes.CROSS_FIT_TIME}_${slot.id}` : 'NO_SLOTS',
+          free > 0 ? `${HealthyBackTypes.HEALTHY_BACK_TIME}_${slot.id}` : 'NO_SLOTS',
         ),
       ];
     });
 
   buttons.push(
-    [Markup.button.callback(AdminButtonsText.ADMIN_BACK, CrossfitTypes.CROSS_FIT_TIME_BACK)],
-    [Markup.button.callback(CrossfitTypesText.CLOSE, CrossfitTypes.CLOSE)],
+    [Markup.button.callback(AdminButtonsText.ADMIN_BACK, HealthyBackTypes.HEALTHY_BACK_TIME_BACK)],
+    [Markup.button.callback(HealthyBackTypesText.CLOSE, HealthyBackTypes.CLOSE)],
   );
 
   if (messageType === 'reply') {
@@ -105,7 +105,7 @@ export const handleCrossfitDay = async (
   }
 };
 
-export const handleCrossfitTime = async (ctx: Context, trainingId: number, adminId: string) => {
+export const handleHealthyBackTime = async (ctx: Context, trainingId: number, adminId: string) => {
   const user = ctx.from;
   if (!user) {
     return;
@@ -126,33 +126,17 @@ export const handleCrossfitTime = async (ctx: Context, trainingId: number, admin
 
   if (free <= 0) {
     await safeEditOrReply(ctx, 'Мест нет.');
-    await handleCrossfitDay(ctx, training.dayOfWeek, 'reply');
+    await handleHealthyBackDay(ctx, training.dayOfWeek, 'reply');
     return;
   }
 
   const existingBooking = await prisma.booking.findFirst({
-    where: {
-      userId: user.id,
-      OR: [
-        {
-          training: {
-            date: training.date,
-            time: training.time,
-          },
-        },
-        {
-          training: {
-            date: training.date,
-            type: training.type,
-          },
-        },
-      ],
-    },
+    where: { userId: user.id, training: { date: training.date } },
   });
 
   if (existingBooking) {
     await safeEditOrReply(ctx, `Вы уже записаны на тренировку (${getFormatDate(training.date)})`);
-    await handleCrossfit(ctx, 'reply');
+    await handleHealthyBack(ctx, 'reply');
     return;
   }
 
@@ -175,10 +159,10 @@ export const handleCrossfitTime = async (ctx: Context, trainingId: number, admin
 
   await safeEditOrReply(
     ctx,
-    `Вы записаны на CrossFit: ${training.time} (${getFormatDate(training.date)})`,
+    `Вы записаны на тренировку Здоровая спина: ${training.time} (${getFormatDate(training.date)})`,
   );
 
-  const msg = `${userName} записался(-ась) на CrossFit: ${training.time} (${getFormatDate(
+  const msg = `${userName} записался(-ась) на тренировку Здоровая спина: ${training.time} (${getFormatDate(
     training.date,
   )})`;
 
