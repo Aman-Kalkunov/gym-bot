@@ -3,6 +3,7 @@ import { Context, Telegraf } from 'telegraf';
 import { BotCommand, ScheduleButtons } from '../../../types/types';
 import { scheduleButtons } from '../../keyboards/scheduleButtons';
 import { handleCrossfit } from './handleCrossfit';
+import { handleHealthyBack } from './handleHealthyBack';
 import { handleWeightlifting } from './handleWeightlifting';
 
 export const setupScheduleHandlers = (bot: Telegraf<Context>) => {
@@ -15,8 +16,17 @@ export const setupScheduleHandlers = (bot: Telegraf<Context>) => {
     await ctx.answerCbQuery();
   });
 
+  bot.action(ScheduleButtons.HEALTHY_BACK, async ctx => {
+    await handleHealthyBack(ctx, 'edit');
+    await ctx.answerCbQuery();
+  });
+
   bot.action(ScheduleButtons.WEIGHTLIFTING, async ctx => {
     await handleWeightlifting(ctx);
     await ctx.answerCbQuery();
   });
+
+  bot.action('NOOP', ctx => ctx.answerCbQuery('Это не кнопка'));
+
+  bot.action('NO_SLOTS', ctx => ctx.answerCbQuery('Мест нет'));
 };

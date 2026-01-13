@@ -1,7 +1,16 @@
 import { Context, Markup } from 'telegraf';
 
+import { TrainingType } from '@prisma/client';
+import { InlineKeyboardButton } from 'telegraf/typings/core/types/typegram';
 import { prisma } from '../../../db';
-import { CrossfitTypes, CrossfitTypesText, IBooking, MessageType } from '../../../types/types';
+import {
+  CrossfitTypes,
+  CrossfitTypesText,
+  HealthyBackTypes,
+  IBooking,
+  MessageType,
+  ScheduleButtonsText,
+} from '../../../types/types';
 import { getFormatDate, getUserName, safeEditOrReply } from '../../helpers/helpers';
 
 export const handleMyBookings = async (ctx: Context, messageType: MessageType) => {
@@ -21,16 +30,47 @@ export const handleMyBookings = async (ctx: Context, messageType: MessageType) =
     return;
   }
 
-  const buttons = bookings.map(b => {
+  const crossfitRows: InlineKeyboardButton[][] = [];
+  const healthyBackRows: InlineKeyboardButton[][] = [];
+
+  bookings.forEach(b => {
     const { id, training } = b;
+    if (!training) {
+      return;
+    }
+
     const dateStr = getFormatDate(training?.date);
-    return [
-      Markup.button.callback(
-        `${dateStr} — ${training?.time}`,
-        `${CrossfitTypes.CROSS_FIT_BOOKING}_${id}`,
-      ),
-    ];
+
+    if (training.type === TrainingType.CROSSFIT) {
+      crossfitRows.push([
+        Markup.button.callback(
+          `${dateStr} — ${training?.time}`,
+          `${CrossfitTypes.CROSS_FIT_BOOKING}_${id}`,
+        ),
+      ]);
+    }
+
+    if (training.type === TrainingType.BACK) {
+      healthyBackRows.push([
+        Markup.button.callback(
+          `${dateStr} — ${training.time}`,
+          `${HealthyBackTypes.HEALTHY_BACK_BOOKING}_${id}`,
+        ),
+      ]);
+    }
   });
+
+  const buttons: InlineKeyboardButton[][] = [];
+
+  if (crossfitRows.length > 0) {
+    buttons.push([Markup.button.callback(ScheduleButtonsText.CROSS_FIT, 'NOOP')]);
+    buttons.push(...crossfitRows);
+  }
+
+  if (healthyBackRows.length > 0) {
+    buttons.push([Markup.button.callback(ScheduleButtonsText.HEALTHY_BACK, 'NOOP')]);
+    buttons.push(...healthyBackRows);
+  }
 
   buttons.push([Markup.button.callback(CrossfitTypesText.CLOSE, CrossfitTypes.CLOSE)]);
 
@@ -64,7 +104,10 @@ export const handleBookingInfo = async (ctx: Context, bookingId: number) => {
   }
 
   const date = getFormatDate(booking.training?.date);
-  const text = `Вы уверены, что хотите удалить запись?\n\n${booking.training?.time} (${date})`;
+  const text =
+    booking.training?.type === TrainingType.CROSSFIT
+      ? `Вы уверены, что хотите удалить запись на CrossFit?\n\n${booking.training?.time} (${date})`
+      : `Вы уверены, что хотите удалить запись на тренировку Здоровая спина?\n\n${booking.training?.time} (${date})`;
 
   await ctx.editMessageText(
     text,
@@ -108,7 +151,10 @@ export const handleCancelBooking = async (ctx: Context, bookingId: number, admin
   if (user) {
     const userName = getUserName(user);
 
-    const msg = `${userName} отменил(-а) запись на CrossFit: ${time} (${date})`;
+    const msg =
+      booking.training?.type === TrainingType.CROSSFIT
+        ? `${userName} отменил(-а) запись на CrossFit: ${time} (${date})`
+        : `${userName} отменил(-а) запись на тренировку Здоровая спина: ${time} (${date})`;
 
     try {
       await ctx.telegram.sendMessage(adminId, msg);

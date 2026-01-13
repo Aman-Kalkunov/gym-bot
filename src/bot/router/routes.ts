@@ -1,4 +1,10 @@
-import { AdminButtons, CrossfitTypes, Route, WeightliftingButtons } from '../../types/types';
+import {
+  AdminButtons,
+  CrossfitTypes,
+  HealthyBackTypes,
+  Route,
+  WeightliftingButtons,
+} from '../../types/types';
 
 import {
   handleCrossfit,
@@ -27,7 +33,13 @@ import {
 
 import { scheduleButtons } from '../keyboards/scheduleButtons';
 
+import { TrainingType } from '@prisma/client';
 import { handleAdminBookings } from '../handlers/admin/handleAdminBookings';
+import {
+  handleHealthyBack,
+  handleHealthyBackDay,
+  handleHealthyBackTime,
+} from '../handlers/schedule/handleHealthyBack';
 import { handleWeightliftingDay } from '../handlers/schedule/handleWeightlifting';
 
 export const routes: Route[] = [
@@ -49,7 +61,23 @@ export const routes: Route[] = [
   },
 
   {
+    match: d => d === HealthyBackTypes.HEALTHY_BACK_TIME_BACK,
+    handler: async ctx => {
+      await handleHealthyBack(ctx, 'edit');
+      await ctx.answerCbQuery();
+    },
+  },
+
+  {
     match: d => d === CrossfitTypes.CROSS_FIT_DAY_BACK,
+    handler: async ctx => {
+      await ctx.editMessageText('Выберите тип тренировки', scheduleButtons);
+      await ctx.answerCbQuery();
+    },
+  },
+
+  {
+    match: d => d === HealthyBackTypes.HEALTHY_BACK_DAY_BACK,
     handler: async ctx => {
       await ctx.editMessageText('Выберите тип тренировки', scheduleButtons);
       await ctx.answerCbQuery();
@@ -75,6 +103,17 @@ export const routes: Route[] = [
     },
   },
 
+  // HEALTHY — DAY
+  {
+    match: d => d.startsWith(`${HealthyBackTypes.HEALTHY_BACK_DAY}_`),
+    handler: async (ctx, m) => {
+      const day = Number(ctx.callbackQuery.data.split('_')[3]);
+      if (Number.isNaN(day)) return ctx.answerCbQuery('Некорректный день');
+      await handleHealthyBackDay(ctx, day, 'edit');
+      await ctx.answerCbQuery();
+    },
+  },
+
   // CROSSFIT — TIME
   {
     match: d => d.startsWith(`${CrossfitTypes.CROSS_FIT_TIME}_`),
@@ -86,9 +125,32 @@ export const routes: Route[] = [
     },
   },
 
+  // HEALTHY — TIME
+  {
+    match: d => d.startsWith(`${HealthyBackTypes.HEALTHY_BACK_TIME}_`),
+    handler: async ctx => {
+      const trainingId = Number(ctx.callbackQuery.data.split('_')[3]);
+      if (Number.isNaN(trainingId)) return ctx.answerCbQuery('Некорректное время');
+      await handleHealthyBackTime(ctx, trainingId, process.env.ADMIN_ID!);
+      await ctx.answerCbQuery();
+    },
+  },
+
   // BOOKING INFO / CANCEL
   {
     match: d => d.startsWith(`${CrossfitTypes.CROSS_FIT_BOOKING}_`),
+    handler: async ctx => {
+      const id = Number(ctx.callbackQuery.data.split('_')[3]);
+      if (Number.isNaN(id)) {
+        return ctx.answerCbQuery('Ошибка');
+      }
+      await handleBookingInfo(ctx, id);
+      await ctx.answerCbQuery();
+    },
+  },
+
+  {
+    match: d => d.startsWith(`${HealthyBackTypes.HEALTHY_BACK_BOOKING}_`),
     handler: async ctx => {
       const id = Number(ctx.callbackQuery.data.split('_')[3]);
       if (Number.isNaN(id)) {
@@ -116,20 +178,28 @@ export const routes: Route[] = [
     match: d => d.startsWith(`${AdminButtons.ADMIN_DAY}_`),
     handler: async ctx => {
       const day = Number(ctx.callbackQuery.data.split('_')[2]);
-      if (Number.isNaN(day)) {
+      const type = ctx.callbackQuery.data.split('_')[3];
+
+      if (Number.isNaN(day) || !(type === TrainingType.CROSSFIT || type === TrainingType.BACK)) {
         return ctx.answerCbQuery('Ошибка');
       }
-      await handleAdminScheduleDay(ctx, day);
+      await handleAdminScheduleDay(ctx, day, type);
       await ctx.answerCbQuery();
     },
   },
 
   // ADMIN — ADD DAY
   {
-    match: d => d === AdminButtons.ADMIN_ADD_DAY,
+    match: d => d.startsWith(`${AdminButtons.ADMIN_ADD_DAY}_`),
+
     handler: async ctx => {
-      await handleAdminAddDay(ctx);
-      await ctx.answerCbQuery();
+      const type = ctx.callbackQuery.data.split('_')[3];
+      if (type === TrainingType.CROSSFIT || type === TrainingType.BACK) {
+        await handleAdminAddDay(ctx, type);
+        await ctx.answerCbQuery();
+      } else {
+        return ctx.answerCbQuery('Ошибка');
+      }
     },
   },
 
@@ -137,10 +207,11 @@ export const routes: Route[] = [
     match: d => d.startsWith(`${AdminButtons.ADMIN_SELECT_DAY}_`),
     handler: async ctx => {
       const day = Number(ctx.callbackQuery.data.split('_')[3]);
-      if (Number.isNaN(day)) {
+      const type = ctx.callbackQuery.data.split('_')[4];
+      if (Number.isNaN(day) || !(type === TrainingType.CROSSFIT || type === TrainingType.BACK)) {
         return ctx.answerCbQuery('Ошибка');
       }
-      await handleAdminSelectTime(ctx, day);
+      await handleAdminSelectTime(ctx, day, type);
       await ctx.answerCbQuery();
     },
   },
@@ -148,12 +219,12 @@ export const routes: Route[] = [
   {
     match: d => d.startsWith(`${AdminButtons.ADMIN_CONFIRM_ADD}_`),
     handler: async ctx => {
-      const [, , , day, time] = ctx.callbackQuery.data.split('_');
+      const [, , , day, time, type] = ctx.callbackQuery.data.split('_');
       const dayOfWeek = Number(day);
-      if (Number.isNaN(day)) {
+      if (Number.isNaN(day) || !(type === TrainingType.CROSSFIT || type === TrainingType.BACK)) {
         return ctx.answerCbQuery('Ошибка');
       }
-      await handleAdminConfirmAdd(ctx, dayOfWeek, time);
+      await handleAdminConfirmAdd(ctx, dayOfWeek, time, type);
       await ctx.answerCbQuery();
     },
   },
@@ -163,10 +234,11 @@ export const routes: Route[] = [
     match: d => d.startsWith(`${AdminButtons.ADMIN_ADD_TIME}_`),
     handler: async ctx => {
       const day = Number(ctx.callbackQuery.data.split('_')[3]);
-      if (Number.isNaN(day)) {
+      const type = ctx.callbackQuery.data.split('_')[4];
+      if (Number.isNaN(day) || !(type === TrainingType.CROSSFIT || type === TrainingType.BACK)) {
         return ctx.answerCbQuery('Ошибка');
       }
-      await handleAdminAddTime(ctx, day);
+      await handleAdminAddTime(ctx, day, type);
       await ctx.answerCbQuery();
     },
   },
@@ -174,12 +246,15 @@ export const routes: Route[] = [
   {
     match: d => d.startsWith(`${AdminButtons.ADMIN_SELECT_ADD_TIME}_`),
     handler: async ctx => {
-      const [, , , , day, time] = ctx.callbackQuery.data.split('_');
+      const [, , , , day, time, type] = ctx.callbackQuery.data.split('_');
       const dayOfWeek = Number(day);
-      if (Number.isNaN(dayOfWeek)) {
+      if (
+        Number.isNaN(dayOfWeek) ||
+        !(type === TrainingType.CROSSFIT || type === TrainingType.BACK)
+      ) {
         return ctx.answerCbQuery('Ошибка');
       }
-      await addTrainingTime(ctx, dayOfWeek, time);
+      await addTrainingTime(ctx, dayOfWeek, time, type);
       await ctx.answerCbQuery();
     },
   },
@@ -189,10 +264,11 @@ export const routes: Route[] = [
     match: d => d.startsWith(`${AdminButtons.ADMIN_REMOVE_TIME}_`),
     handler: async ctx => {
       const day = Number(ctx.callbackQuery.data.split('_')[3]);
-      if (Number.isNaN(day)) {
+      const type = ctx.callbackQuery.data.split('_')[4];
+      if (Number.isNaN(day) || !(type === TrainingType.CROSSFIT || type === TrainingType.BACK)) {
         return ctx.answerCbQuery('Ошибка');
       }
-      await handleAdminRemoveTime(ctx, day);
+      await handleAdminRemoveTime(ctx, day, type);
       await ctx.answerCbQuery();
     },
   },
@@ -214,20 +290,26 @@ export const routes: Route[] = [
     match: d => d.startsWith(`${AdminButtons.ADMIN_REMOVE_DAY}_`),
     handler: async ctx => {
       const day = Number(ctx.callbackQuery.data.split('_')[3]);
-      if (Number.isNaN(day)) {
+      const type = ctx.callbackQuery.data.split('_')[4];
+      if (Number.isNaN(day) || !(type === TrainingType.CROSSFIT || type === TrainingType.BACK)) {
         return ctx.answerCbQuery('Ошибка');
       }
-      await handleAdminRemoveDay(ctx, day);
+      await handleAdminRemoveDay(ctx, day, type);
       await ctx.answerCbQuery();
     },
   },
 
   // ADMIN — SCHEDULE ROOT
   {
-    match: d => d === AdminButtons.ADMIN_SCHEDULE,
+    match: d => d.startsWith(`${AdminButtons.ADMIN_SCHEDULE}_`),
     handler: async ctx => {
-      await handleAdminSchedule(ctx);
-      await ctx.answerCbQuery();
+      const type = ctx.callbackQuery.data.split('_')[2];
+      if (type === TrainingType.CROSSFIT || type === TrainingType.BACK) {
+        await handleAdminSchedule(ctx, type);
+        await ctx.answerCbQuery();
+      } else {
+        return ctx.answerCbQuery('Ошибка');
+      }
     },
   },
 
@@ -235,11 +317,15 @@ export const routes: Route[] = [
     match: d => d.startsWith(`${AdminButtons.ADMIN_BOOKINGS}_`),
     handler: async ctx => {
       const dayOfWeek = Number(ctx.callbackQuery.data.split('_')[2]);
-      if (Number.isNaN(dayOfWeek)) {
+      const type = ctx.callbackQuery.data.split('_')[3];
+      if (
+        Number.isNaN(dayOfWeek) ||
+        !(type === TrainingType.CROSSFIT || type === TrainingType.BACK)
+      ) {
         return ctx.answerCbQuery('Ошибка');
       }
       await ctx.editMessageReplyMarkup(undefined);
-      await handleAdminBookings(ctx, dayOfWeek);
+      await handleAdminBookings(ctx, dayOfWeek, type);
       await ctx.answerCbQuery();
     },
   },

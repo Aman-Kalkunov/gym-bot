@@ -2,10 +2,20 @@ import cron from 'node-cron';
 
 import { TrainingType } from '@prisma/client';
 import { prisma } from '../../db';
-import { CROSS_FIT_SCHEDULE, ITraining, CAPACITY as capacity } from '../../types/types';
+import {
+  CROSS_FIT_SCHEDULE,
+  HEALTHY_BACK_SCHEDULE,
+  ITraining,
+  CAPACITY as capacity,
+} from '../../types/types';
 import { formatDate } from './helpers';
 
-export const setupCrossfitAutoUpdate = () => {
+const SCHEDULE_BY_TYPE: Record<TrainingType, Record<number, string[]>> = {
+  [TrainingType.CROSSFIT]: CROSS_FIT_SCHEDULE,
+  [TrainingType.BACK]: HEALTHY_BACK_SCHEDULE,
+};
+
+export const setupAutoUpdate = () => {
   cron.schedule('0 19 * * *', async () => {
     const today = new Date();
     const todayStr = formatDate(today);
@@ -32,38 +42,43 @@ export const setupCrossfitAutoUpdate = () => {
       }),
     ]);
 
-    // Проверяем, есть ли уже тренировки на одноименный день следующей недели
-    const existing: ITraining[] | null = await prisma.training.findMany({
-      where: { date: nextWeekDayStr },
-    });
-
-    if (existing?.length > 0) {
-      console.log(`Тренировки на ${nextWeekDayStr} уже существуют`);
-      return;
-    }
-
     const dow = nextWeekDay.getDay();
-    const times = CROSS_FIT_SCHEDULE[dow];
 
-    if (!times || times.length === 0) {
-      console.warn(`Нет расписания для дня недели ${dow}`);
-      return;
+    for (const type of Object.values(TrainingType)) {
+      const schedule = SCHEDULE_BY_TYPE[type];
+      const times = schedule?.[dow];
+
+      if (!times || times.length === 0) {
+        continue; // нет тренировок этого типа в этот день — и ладно
+      }
+
+      // Проверяем, есть ли уже тренировки этого типа
+      const existing: ITraining | null = await prisma.training.findFirst({
+        where: {
+          date: nextWeekDayStr,
+          type,
+        },
+      });
+
+      if (existing) {
+        continue;
+      }
+
+      await prisma.$transaction(
+        times.map(time =>
+          prisma.training.create({
+            data: {
+              type,
+              date: nextWeekDayStr,
+              dayOfWeek: dow,
+              time,
+              capacity,
+            },
+          }),
+        ),
+      );
+
+      console.log(`Добавлены тренировки ${type} на ${nextWeekDayStr}`);
     }
-
-    await prisma.$transaction(
-      times.map(time =>
-        prisma.training.create({
-          data: {
-            date: nextWeekDayStr,
-            dayOfWeek: dow,
-            time,
-            capacity,
-            type: TrainingType.CROSSFIT,
-          },
-        }),
-      ),
-    );
-
-    console.log(`Добавлены тренировки на ${nextWeekDayStr}`);
   });
 };
