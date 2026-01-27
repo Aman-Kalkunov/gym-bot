@@ -6,6 +6,7 @@ import {
   CROSS_FIT_SCHEDULE,
   HEALTHY_BACK_SCHEDULE,
   ITraining,
+  BACK_CAPACITY as backCapacity,
   CAPACITY as capacity,
 } from '../../types/types';
 import { formatDate } from './helpers';
@@ -72,7 +73,7 @@ export const setupAutoUpdate = () => {
               date: nextWeekDayStr,
               dayOfWeek: dow,
               time,
-              capacity,
+              capacity: type === 'CROSSFIT' ? capacity : backCapacity,
             },
           }),
         ),

@@ -1,6 +1,7 @@
 import { TrainingType } from '@prisma/client';
 
 export const CAPACITY = 12;
+export const BACK_CAPACITY = 10;
 
 export enum BotCommand {
   INFO = 'info',
