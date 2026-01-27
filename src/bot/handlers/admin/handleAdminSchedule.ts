@@ -12,6 +12,7 @@ import { prisma } from '../../../db';
 import {
   AdminButtons,
   AdminButtonsText,
+  BACK_CAPACITY as backCapacity,
   CAPACITY as capacity,
   CROSS_FIT_ALL_TIME,
   CrossfitTypes,
@@ -306,7 +307,13 @@ export const addTrainingTime = async (
 
   try {
     await prisma.training.create({
-      data: { date: dateStr, dayOfWeek, time, capacity, type },
+      data: {
+        date: dateStr,
+        dayOfWeek,
+        time,
+        capacity: type === 'CROSSFIT' ? capacity : backCapacity,
+        type,
+      },
     });
   } catch (err) {
     console.error('Ошибка при добавлении времени:', err);
@@ -418,7 +425,7 @@ export const handleAdminConfirmAdd = async (
         date: dateStr,
         dayOfWeek,
         time,
-        capacity,
+        capacity: type === 'CROSSFIT' ? capacity : backCapacity,
         type,
       },
     });
