@@ -46,6 +46,16 @@ export const HEALTHY_BACK_SCHEDULE: Record<number, string[]> = {
   6: [TrainingTime['12:00']],
 };
 
+export const CALORIES_SCHEDULE: Record<number, string[]> = {
+  0: [],
+  1: [],
+  2: [],
+  3: [],
+  4: [],
+  5: [],
+  6: [],
+};
+
 export const CROSS_FIT_SCHEDULE: Record<number, string[]> = {
   0: [],
   1: [
