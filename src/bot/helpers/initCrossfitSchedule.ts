@@ -1,13 +1,8 @@
 import { TrainingType } from '@prisma/client';
 import { prisma } from '../../db';
 
-import {
-  CALORIES_SCHEDULE,
-  CROSS_FIT_SCHEDULE,
-  HEALTHY_BACK_SCHEDULE,
-  CAPACITY as capacity,
-} from '../../types/types';
-import { formatDate } from './helpers';
+import { CALORIES_SCHEDULE, CROSS_FIT_SCHEDULE, HEALTHY_BACK_SCHEDULE } from '../../types/types';
+import { formatDate, getCapacity } from './helpers';
 
 const SCHEDULE_BY_TYPE: Record<TrainingType, Record<number, string[]>> = {
   [TrainingType.CROSSFIT]: CROSS_FIT_SCHEDULE,
@@ -56,7 +51,7 @@ export const initSchedule = async () => {
               date: dateStr,
               dayOfWeek,
               time,
-              capacity,
+              capacity: getCapacity(type),
             },
           }),
         );
