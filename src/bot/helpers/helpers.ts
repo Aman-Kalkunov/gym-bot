@@ -1,3 +1,4 @@
+import { TrainingType } from '@prisma/client';
 import { format } from 'date-fns';
 import { ru } from 'date-fns/locale';
 import { Context } from 'telegraf';
@@ -5,7 +6,12 @@ import { InlineKeyboardMarkup, User } from 'telegraf/typings/core/types/typegram
 
 import { Markup } from 'telegraf/typings/markup';
 import { mainInfoText } from '../../constants/text/text';
-import { ITraining } from '../../types/types';
+import {
+  ITraining,
+  BACK_CAPACITY as backCapacity,
+  CALORIES_CAPACITY as caloriesCapacity,
+  CAPACITY as capacity,
+} from '../../types/types';
 
 export const sayHello = () => async (ctx: Context) => {
   await ctx.reply(mainInfoText.startText);
@@ -90,3 +96,18 @@ export const buildDayMessage = (trainingsOfDay: ITraining[]) => {
 
   return message;
 };
+
+export const getCapacity = (type: TrainingType) => {
+  if (type === 'BACK') {
+    return backCapacity;
+  }
+
+  if (type === 'CALORIES') {
+    return caloriesCapacity;
+  }
+
+  return capacity;
+};
+
+export const isValidType = (type: TrainingType) =>
+  type === TrainingType.CROSSFIT || type === TrainingType.BACK || type === TrainingType.CALORIES;

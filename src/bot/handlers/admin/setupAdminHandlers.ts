@@ -19,4 +19,9 @@ export const setupAdminHandlers = (bot: Telegraf<Context>) => {
     await handleAdminSchedule(ctx, TrainingType.BACK);
     await ctx.answerCbQuery();
   });
+
+  bot.action(AdminButtons.ADMIN_CALORIES, async ctx => {
+    await handleAdminSchedule(ctx, TrainingType.CALORIES);
+    await ctx.answerCbQuery();
+  });
 };

@@ -4,6 +4,7 @@ import { TrainingType } from '@prisma/client';
 import {
   buildDayMessage,
   formatDate,
+  getCapacity,
   getDayName,
   getFormatDate,
   safeEditOrReply,
@@ -12,8 +13,6 @@ import { prisma } from '../../../db';
 import {
   AdminButtons,
   AdminButtonsText,
-  BACK_CAPACITY as backCapacity,
-  CAPACITY as capacity,
   CROSS_FIT_ALL_TIME,
   CrossfitTypes,
   CrossfitTypesText,
@@ -311,7 +310,7 @@ export const addTrainingTime = async (
         date: dateStr,
         dayOfWeek,
         time,
-        capacity: type === 'CROSSFIT' ? capacity : backCapacity,
+        capacity: getCapacity(type),
         type,
       },
     });
@@ -425,7 +424,7 @@ export const handleAdminConfirmAdd = async (
         date: dateStr,
         dayOfWeek,
         time,
-        capacity: type === 'CROSSFIT' ? capacity : backCapacity,
+        capacity: getCapacity(type),
         type,
       },
     });

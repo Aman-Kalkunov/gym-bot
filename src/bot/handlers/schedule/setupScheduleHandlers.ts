@@ -2,6 +2,7 @@ import { Context, Telegraf } from 'telegraf';
 
 import { BotCommand, ScheduleButtons } from '../../../types/types';
 import { scheduleButtons } from '../../keyboards/scheduleButtons';
+import { handleCalories } from './handleCalories';
 import { handleCrossfit } from './handleCrossfit';
 import { handleHealthyBack } from './handleHealthyBack';
 import { handleWeightlifting } from './handleWeightlifting';
@@ -18,6 +19,11 @@ export const setupScheduleHandlers = (bot: Telegraf<Context>) => {
 
   bot.action(ScheduleButtons.HEALTHY_BACK, async ctx => {
     await handleHealthyBack(ctx, 'edit');
+    await ctx.answerCbQuery();
+  });
+
+  bot.action(ScheduleButtons.CALORIES, async ctx => {
+    await handleCalories(ctx, 'edit');
     await ctx.answerCbQuery();
   });
 

@@ -7,10 +7,8 @@ import {
   CROSS_FIT_SCHEDULE,
   HEALTHY_BACK_SCHEDULE,
   ITraining,
-  BACK_CAPACITY as backCapacity,
-  CAPACITY as capacity,
 } from '../../types/types';
-import { formatDate } from './helpers';
+import { formatDate, getCapacity } from './helpers';
 
 const SCHEDULE_BY_TYPE: Record<TrainingType, Record<number, string[]>> = {
   [TrainingType.CROSSFIT]: CROSS_FIT_SCHEDULE,
@@ -75,7 +73,7 @@ export const setupAutoUpdate = () => {
               date: nextWeekDayStr,
               dayOfWeek: dow,
               time,
-              capacity: type === 'CROSSFIT' ? capacity : backCapacity,
+              capacity: getCapacity(type),
             },
           }),
         ),
