@@ -10,5 +10,6 @@ import {
 export const adminButtons = Markup.inlineKeyboard([
   [Markup.button.callback(AdminButtonsText.ADMIN_CROSS_FIT, AdminButtons.ADMIN_CROSS_FIT)],
   [Markup.button.callback(AdminButtonsText.ADMIN_HEALTHY_BACK, AdminButtons.ADMIN_HEALTHY_BACK)],
+  [Markup.button.callback(AdminButtonsText.ADMIN_CALORIES, AdminButtons.ADMIN_CALORIES)],
   [Markup.button.callback(CrossfitTypesText.CLOSE, CrossfitTypes.CLOSE)],
 ]);

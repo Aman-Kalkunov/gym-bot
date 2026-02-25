@@ -4,6 +4,7 @@ import { TrainingType } from '@prisma/client';
 import { InlineKeyboardButton } from 'telegraf/typings/core/types/typegram';
 import { prisma } from '../../../db';
 import {
+  CaloriesTypes,
   CrossfitTypes,
   CrossfitTypesText,
   HealthyBackTypes,
@@ -32,6 +33,7 @@ export const handleMyBookings = async (ctx: Context, messageType: MessageType) =
 
   const crossfitRows: InlineKeyboardButton[][] = [];
   const healthyBackRows: InlineKeyboardButton[][] = [];
+  const caloriesRows: InlineKeyboardButton[][] = [];
 
   bookings.forEach(b => {
     const { id, training } = b;
@@ -58,6 +60,15 @@ export const handleMyBookings = async (ctx: Context, messageType: MessageType) =
         ),
       ]);
     }
+
+    if (training.type === TrainingType.CALORIES) {
+      caloriesRows.push([
+        Markup.button.callback(
+          `${dateStr} — ${training.time}`,
+          `${CaloriesTypes.CALORIES_BOOKING}_${id}`,
+        ),
+      ]);
+    }
   });
 
   const buttons: InlineKeyboardButton[][] = [];
@@ -70,6 +81,11 @@ export const handleMyBookings = async (ctx: Context, messageType: MessageType) =
   if (healthyBackRows.length > 0) {
     buttons.push([Markup.button.callback(ScheduleButtonsText.HEALTHY_BACK, 'NOOP')]);
     buttons.push(...healthyBackRows);
+  }
+
+  if (caloriesRows.length > 0) {
+    buttons.push([Markup.button.callback(ScheduleButtonsText.CALORIES, 'NOOP')]);
+    buttons.push(...caloriesRows);
   }
 
   buttons.push([Markup.button.callback(CrossfitTypesText.CLOSE, CrossfitTypes.CLOSE)]);
@@ -107,7 +123,9 @@ export const handleBookingInfo = async (ctx: Context, bookingId: number) => {
   const text =
     booking.training?.type === TrainingType.CROSSFIT
       ? `Вы уверены, что хотите удалить запись на CrossFit?\n\n${booking.training?.time} (${date})`
-      : `Вы уверены, что хотите удалить запись на тренировку Здоровая спина?\n\n${booking.training?.time} (${date})`;
+      : booking.training?.type === TrainingType.BACK
+        ? `Вы уверены, что хотите удалить запись на тренировку Здоровая спина?\n\n${booking.training?.time} (${date})`
+        : `Вы уверены, что хотите удалить запись на тренировку Kalorie Killa?\n\n${booking.training?.time} (${date})`;
 
   await ctx.editMessageText(
     text,
@@ -154,7 +172,9 @@ export const handleCancelBooking = async (ctx: Context, bookingId: number, admin
     const msg =
       booking.training?.type === TrainingType.CROSSFIT
         ? `${userName} отменил(-а) запись на CrossFit: ${time} (${date})`
-        : `${userName} отменил(-а) запись на тренировку Здоровая спина: ${time} (${date})`;
+        : booking.training?.type === TrainingType.BACK
+          ? `${userName} отменил(-а) запись на тренировку Здоровая спина: ${time} (${date})`
+          : `${userName} отменил(-а) запись на тренировку Kalorie Killa: ${time} (${date})`;
 
     try {
       await ctx.telegram.sendMessage(adminId, msg);

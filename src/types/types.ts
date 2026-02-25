@@ -2,6 +2,7 @@ import { TrainingType } from '@prisma/client';
 
 export const CAPACITY = 12;
 export const BACK_CAPACITY = 10;
+export const CALORIES_CAPACITY = 20;
 
 export enum BotCommand {
   INFO = 'info',
@@ -48,11 +49,11 @@ export const HEALTHY_BACK_SCHEDULE: Record<number, string[]> = {
 
 export const CALORIES_SCHEDULE: Record<number, string[]> = {
   0: [],
-  1: [],
+  1: [TrainingTime['11:00']],
   2: [],
   3: [],
   4: [],
-  5: [],
+  5: [TrainingTime['11:00']],
   6: [],
 };
 
@@ -146,11 +147,24 @@ export enum HealthyBackTypes {
   CLOSE = 'CLOSE',
 }
 
+export enum CaloriesTypes {
+  CALORIES_DAY = 'CALORIES_DAY',
+  CALORIES_TIME = 'CALORIES_TIME',
+  CALORIES_BOOKING = 'CALORIES_BOOKING',
+  CALORIES_TIME_BACK = 'CALORIES_TIME_BACK',
+  CALORIES_DAY_BACK = 'CALORIES_DAY_BACK',
+  CLOSE = 'CLOSE',
+}
+
 export enum CrossfitTypesText {
   CLOSE = 'Закрыть',
 }
 
 export enum HealthyBackTypesText {
+  CLOSE = 'Закрыть',
+}
+
+export enum CaloriesTypesText {
   CLOSE = 'Закрыть',
 }
 
@@ -178,12 +192,14 @@ export enum ScheduleButtons {
   CROSS_FIT = 'CROSS_FIT',
   HEALTHY_BACK = 'HEALTHY_BACK',
   WEIGHTLIFTING = 'WEIGHTLIFTING',
+  CALORIES = 'CALORIES',
 }
 
 export enum ScheduleButtonsText {
   CROSS_FIT = 'Кроссфит',
   HEALTHY_BACK = 'Здоровая спина',
   WEIGHTLIFTING = 'Тяжелая атлетика',
+  CALORIES = 'Kalorie Killa',
 }
 
 export enum AdminButtons {
@@ -200,6 +216,7 @@ export enum AdminButtons {
   ADMIN_BOOKINGS = 'ADMIN_BOOKINGS',
   ADMIN_CROSS_FIT = 'ADMIN_CROSS_FIT',
   ADMIN_HEALTHY_BACK = 'ADMIN_HEALTHY_BACK',
+  ADMIN_CALORIES = 'ADMIN_CALORIES',
 }
 
 export enum AdminButtonsText {
@@ -212,6 +229,7 @@ export enum AdminButtonsText {
   ADMIN_BACK = 'Назад',
   ADMIN_CROSS_FIT = 'Кроссфит',
   ADMIN_HEALTHY_BACK = 'Здоровая спина',
+  ADMIN_CALORIES = 'Kalorie Killa',
 }
 
 export enum WeightliftingButtons {

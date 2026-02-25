@@ -1,5 +1,6 @@
 import {
   AdminButtons,
+  CaloriesTypes,
   CrossfitTypes,
   HealthyBackTypes,
   Route,
@@ -33,14 +34,19 @@ import {
 
 import { scheduleButtons } from '../keyboards/scheduleButtons';
 
-import { TrainingType } from '@prisma/client';
 import { handleAdminBookings } from '../handlers/admin/handleAdminBookings';
+import {
+  handleCalories,
+  handleCaloriesDay,
+  handleCaloriesTime,
+} from '../handlers/schedule/handleCalories';
 import {
   handleHealthyBack,
   handleHealthyBackDay,
   handleHealthyBackTime,
 } from '../handlers/schedule/handleHealthyBack';
 import { handleWeightliftingDay } from '../handlers/schedule/handleWeightlifting';
+import { isValidType } from '../helpers/helpers';
 
 export const routes: Route[] = [
   // SYSTEM
@@ -69,6 +75,14 @@ export const routes: Route[] = [
   },
 
   {
+    match: d => d === CaloriesTypes.CALORIES_TIME_BACK,
+    handler: async ctx => {
+      await handleCalories(ctx, 'edit');
+      await ctx.answerCbQuery();
+    },
+  },
+
+  {
     match: d => d === CrossfitTypes.CROSS_FIT_DAY_BACK,
     handler: async ctx => {
       await ctx.editMessageText('Выберите тип тренировки', scheduleButtons);
@@ -78,6 +92,14 @@ export const routes: Route[] = [
 
   {
     match: d => d === HealthyBackTypes.HEALTHY_BACK_DAY_BACK,
+    handler: async ctx => {
+      await ctx.editMessageText('Выберите тип тренировки', scheduleButtons);
+      await ctx.answerCbQuery();
+    },
+  },
+
+  {
+    match: d => d === CaloriesTypes.CALORIES_DAY_BACK,
     handler: async ctx => {
       await ctx.editMessageText('Выберите тип тренировки', scheduleButtons);
       await ctx.answerCbQuery();
@@ -114,6 +136,17 @@ export const routes: Route[] = [
     },
   },
 
+  // CALORIES — DAY
+  {
+    match: d => d.startsWith(`${CaloriesTypes.CALORIES_DAY}_`),
+    handler: async (ctx, m) => {
+      const day = Number(ctx.callbackQuery.data.split('_')[2]);
+      if (Number.isNaN(day)) return ctx.answerCbQuery('Некорректный день');
+      await handleCaloriesDay(ctx, day, 'edit');
+      await ctx.answerCbQuery();
+    },
+  },
+
   // CROSSFIT — TIME
   {
     match: d => d.startsWith(`${CrossfitTypes.CROSS_FIT_TIME}_`),
@@ -132,6 +165,17 @@ export const routes: Route[] = [
       const trainingId = Number(ctx.callbackQuery.data.split('_')[3]);
       if (Number.isNaN(trainingId)) return ctx.answerCbQuery('Некорректное время');
       await handleHealthyBackTime(ctx, trainingId, process.env.ADMIN_ID!);
+      await ctx.answerCbQuery();
+    },
+  },
+
+  // CALORIES — TIME
+  {
+    match: d => d.startsWith(`${CaloriesTypes.CALORIES_TIME}_`),
+    handler: async ctx => {
+      const trainingId = Number(ctx.callbackQuery.data.split('_')[2]);
+      if (Number.isNaN(trainingId)) return ctx.answerCbQuery('Некорректное время');
+      await handleCaloriesTime(ctx, trainingId, process.env.ADMIN_ID!);
       await ctx.answerCbQuery();
     },
   },
@@ -162,6 +206,18 @@ export const routes: Route[] = [
   },
 
   {
+    match: d => d.startsWith(`${CaloriesTypes.CALORIES_BOOKING}_`),
+    handler: async ctx => {
+      const id = Number(ctx.callbackQuery.data.split('_')[2]);
+      if (Number.isNaN(id)) {
+        return ctx.answerCbQuery('Ошибка');
+      }
+      await handleBookingInfo(ctx, id);
+      await ctx.answerCbQuery();
+    },
+  },
+
+  {
     match: d => d.startsWith(`${CrossfitTypes.CROSS_FIT_CANCEL}_`),
     handler: async ctx => {
       const id = Number(ctx.callbackQuery.data.split('_')[3]);
@@ -180,7 +236,7 @@ export const routes: Route[] = [
       const day = Number(ctx.callbackQuery.data.split('_')[2]);
       const type = ctx.callbackQuery.data.split('_')[3];
 
-      if (Number.isNaN(day) || !(type === TrainingType.CROSSFIT || type === TrainingType.BACK)) {
+      if (Number.isNaN(day) || !isValidType(type)) {
         return ctx.answerCbQuery('Ошибка');
       }
       await handleAdminScheduleDay(ctx, day, type);
@@ -194,7 +250,7 @@ export const routes: Route[] = [
 
     handler: async ctx => {
       const type = ctx.callbackQuery.data.split('_')[3];
-      if (type === TrainingType.CROSSFIT || type === TrainingType.BACK) {
+      if (isValidType(type)) {
         await handleAdminAddDay(ctx, type);
         await ctx.answerCbQuery();
       } else {
@@ -208,7 +264,7 @@ export const routes: Route[] = [
     handler: async ctx => {
       const day = Number(ctx.callbackQuery.data.split('_')[3]);
       const type = ctx.callbackQuery.data.split('_')[4];
-      if (Number.isNaN(day) || !(type === TrainingType.CROSSFIT || type === TrainingType.BACK)) {
+      if (Number.isNaN(day) || !isValidType(type)) {
         return ctx.answerCbQuery('Ошибка');
       }
       await handleAdminSelectTime(ctx, day, type);
@@ -221,7 +277,7 @@ export const routes: Route[] = [
     handler: async ctx => {
       const [, , , day, time, type] = ctx.callbackQuery.data.split('_');
       const dayOfWeek = Number(day);
-      if (Number.isNaN(day) || !(type === TrainingType.CROSSFIT || type === TrainingType.BACK)) {
+      if (Number.isNaN(day) || !isValidType(type)) {
         return ctx.answerCbQuery('Ошибка');
       }
       await handleAdminConfirmAdd(ctx, dayOfWeek, time, type);
@@ -235,7 +291,7 @@ export const routes: Route[] = [
     handler: async ctx => {
       const day = Number(ctx.callbackQuery.data.split('_')[3]);
       const type = ctx.callbackQuery.data.split('_')[4];
-      if (Number.isNaN(day) || !(type === TrainingType.CROSSFIT || type === TrainingType.BACK)) {
+      if (Number.isNaN(day) || !isValidType(type)) {
         return ctx.answerCbQuery('Ошибка');
       }
       await handleAdminAddTime(ctx, day, type);
@@ -248,10 +304,7 @@ export const routes: Route[] = [
     handler: async ctx => {
       const [, , , , day, time, type] = ctx.callbackQuery.data.split('_');
       const dayOfWeek = Number(day);
-      if (
-        Number.isNaN(dayOfWeek) ||
-        !(type === TrainingType.CROSSFIT || type === TrainingType.BACK)
-      ) {
+      if (Number.isNaN(dayOfWeek) || !isValidType(type)) {
         return ctx.answerCbQuery('Ошибка');
       }
       await addTrainingTime(ctx, dayOfWeek, time, type);
@@ -265,7 +318,7 @@ export const routes: Route[] = [
     handler: async ctx => {
       const day = Number(ctx.callbackQuery.data.split('_')[3]);
       const type = ctx.callbackQuery.data.split('_')[4];
-      if (Number.isNaN(day) || !(type === TrainingType.CROSSFIT || type === TrainingType.BACK)) {
+      if (Number.isNaN(day) || !isValidType(type)) {
         return ctx.answerCbQuery('Ошибка');
       }
       await handleAdminRemoveTime(ctx, day, type);
@@ -291,7 +344,7 @@ export const routes: Route[] = [
     handler: async ctx => {
       const day = Number(ctx.callbackQuery.data.split('_')[3]);
       const type = ctx.callbackQuery.data.split('_')[4];
-      if (Number.isNaN(day) || !(type === TrainingType.CROSSFIT || type === TrainingType.BACK)) {
+      if (Number.isNaN(day) || !isValidType(type)) {
         return ctx.answerCbQuery('Ошибка');
       }
       await handleAdminRemoveDay(ctx, day, type);
@@ -304,7 +357,7 @@ export const routes: Route[] = [
     match: d => d.startsWith(`${AdminButtons.ADMIN_SCHEDULE}_`),
     handler: async ctx => {
       const type = ctx.callbackQuery.data.split('_')[2];
-      if (type === TrainingType.CROSSFIT || type === TrainingType.BACK) {
+      if (isValidType(type)) {
         await handleAdminSchedule(ctx, type);
         await ctx.answerCbQuery();
       } else {
@@ -318,10 +371,7 @@ export const routes: Route[] = [
     handler: async ctx => {
       const dayOfWeek = Number(ctx.callbackQuery.data.split('_')[2]);
       const type = ctx.callbackQuery.data.split('_')[3];
-      if (
-        Number.isNaN(dayOfWeek) ||
-        !(type === TrainingType.CROSSFIT || type === TrainingType.BACK)
-      ) {
+      if (Number.isNaN(dayOfWeek) || !isValidType(type)) {
         return ctx.answerCbQuery('Ошибка');
       }
       await ctx.editMessageReplyMarkup(undefined);
