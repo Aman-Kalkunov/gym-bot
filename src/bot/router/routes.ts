@@ -36,6 +36,11 @@ import { scheduleButtons } from '../keyboards/scheduleButtons';
 
 import { handleAdminBookings } from '../handlers/admin/handleAdminBookings';
 import {
+  handleAdminReserve,
+  handleAdminReservePlace,
+  handleAdminReserveTime,
+} from '../handlers/admin/handleAdminReserve';
+import {
   handleCalories,
   handleCaloriesDay,
   handleCaloriesTime,
@@ -376,6 +381,47 @@ export const routes: Route[] = [
       }
       await ctx.editMessageReplyMarkup(undefined);
       await handleAdminBookings(ctx, dayOfWeek, type);
+      await ctx.answerCbQuery();
+    },
+  },
+
+  {
+    match: d => d.startsWith(`${AdminButtons.ADMIN_RESERVE}_`),
+    handler: async ctx => {
+      const dayOfWeek = Number(ctx.callbackQuery.data.split('_')[2]);
+      const type = ctx.callbackQuery.data.split('_')[3];
+      if (Number.isNaN(dayOfWeek) || !isValidType(type)) {
+        return ctx.answerCbQuery('Ошибка');
+      }
+      await ctx.editMessageReplyMarkup(undefined);
+      await handleAdminReserve(ctx, dayOfWeek, type);
+      await ctx.answerCbQuery();
+    },
+  },
+
+  {
+    match: d => d.startsWith(`${AdminButtons.ADMIN_TIME_RESERVE}_`),
+    handler: async ctx => {
+      const id = Number(ctx.callbackQuery.data.split('_')[3]);
+      if (Number.isNaN(id)) {
+        return ctx.answerCbQuery('Ошибка');
+      }
+      await ctx.editMessageReplyMarkup(undefined);
+      await handleAdminReserveTime(ctx, id);
+      await ctx.answerCbQuery();
+    },
+  },
+
+  {
+    match: d => d.startsWith(`${AdminButtons.ADMIN_PLACE_RESERVE}_`),
+    handler: async ctx => {
+      const place = Number(ctx.callbackQuery.data.split('_')[3]);
+      const id = Number(ctx.callbackQuery.data.split('_')[4]);
+      if (Number.isNaN(place) || Number.isNaN(id)) {
+        return ctx.answerCbQuery('Ошибка');
+      }
+
+      await handleAdminReservePlace(ctx, place, id);
       await ctx.answerCbQuery();
     },
   },
