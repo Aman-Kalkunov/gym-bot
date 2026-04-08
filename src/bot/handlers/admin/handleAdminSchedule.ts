@@ -80,6 +80,12 @@ export const handleAdminScheduleDay = async (
   const buttons = [
     [
       Markup.button.callback(
+        AdminButtonsText.ADMIN_RESERVE,
+        `${AdminButtons.ADMIN_RESERVE}_${dayOfWeek}_${type}`,
+      ),
+    ],
+    [
+      Markup.button.callback(
         AdminButtonsText.ADMIN_BOOKINGS,
         `${AdminButtons.ADMIN_BOOKINGS}_${dayOfWeek}_${type}`,
       ),
