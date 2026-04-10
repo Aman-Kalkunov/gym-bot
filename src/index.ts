@@ -15,6 +15,8 @@ import { prisma } from './db';
 
 dotenv.config();
 
+console.log('DB URL:', process.env.DATABASE_URL);
+
 const token = process.env.BOT_TOKEN!;
 const adminId = process.env.ADMIN_ID!;
 const devId = process.env.DEV_ID!;
