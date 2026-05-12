@@ -64,8 +64,8 @@ export const HYROX_SCHEDULE: Record<number, string[]> = {
   2: [],
   3: [],
   4: [],
-  5: [TrainingTime['10:00'], TrainingTime['11:00']],
-  6: [],
+  5: [],
+  6: [TrainingTime['10:00'], TrainingTime['11:00']],
 };
 
 export const CROSS_FIT_SCHEDULE: Record<number, string[]> = {
@@ -93,7 +93,7 @@ export const CROSS_FIT_SCHEDULE: Record<number, string[]> = {
     TrainingTime['19:00'],
     TrainingTime['20:00'],
   ],
-  6: [TrainingTime['10:00'], TrainingTime['11:00']],
+  6: [],
 };
 
 export const CROSS_FIT_ALL_TIME = [
