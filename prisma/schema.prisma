@@ -11,6 +11,7 @@ enum TrainingType {
   CROSSFIT
   BACK
   CALORIES
+  HYROX
 }
 
 model Training {
