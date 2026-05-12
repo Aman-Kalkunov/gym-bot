@@ -3,6 +3,7 @@ import { TrainingType } from '@prisma/client';
 export const CAPACITY = 12;
 export const BACK_CAPACITY = 10;
 export const CALORIES_CAPACITY = 20;
+export const HYROX_CAPACITY = 10;
 
 export enum BotCommand {
   INFO = 'info',
@@ -54,6 +55,16 @@ export const CALORIES_SCHEDULE: Record<number, string[]> = {
   3: [],
   4: [],
   5: [TrainingTime['11:00']],
+  6: [],
+};
+
+export const HYROX_SCHEDULE: Record<number, string[]> = {
+  0: [],
+  1: [],
+  2: [],
+  3: [],
+  4: [],
+  5: [TrainingTime['10:00'], TrainingTime['11:00']],
   6: [],
 };
 
@@ -156,6 +167,15 @@ export enum CaloriesTypes {
   CLOSE = 'CLOSE',
 }
 
+export enum HYROXTypes {
+  HYROX_DAY = 'HYROX_DAY',
+  HYROX_TIME = 'HYROX_TIME',
+  HYROX_BOOKING = 'HYROX_BOOKING',
+  HYROX_TIME_BACK = 'HYROX_TIME_BACK',
+  HYROX_DAY_BACK = 'HYROX_DAY_BACK',
+  CLOSE = 'CLOSE',
+}
+
 export enum CrossfitTypesText {
   CLOSE = 'Закрыть',
 }
@@ -165,6 +185,10 @@ export enum HealthyBackTypesText {
 }
 
 export enum CaloriesTypesText {
+  CLOSE = 'Закрыть',
+}
+
+export enum HYROXTypesText {
   CLOSE = 'Закрыть',
 }
 
@@ -193,6 +217,7 @@ export enum ScheduleButtons {
   HEALTHY_BACK = 'HEALTHY_BACK',
   WEIGHTLIFTING = 'WEIGHTLIFTING',
   CALORIES = 'CALORIES',
+  HYROX = 'HYROX',
 }
 
 export enum ScheduleButtonsText {
@@ -200,6 +225,7 @@ export enum ScheduleButtonsText {
   HEALTHY_BACK = 'Здоровая спина',
   WEIGHTLIFTING = 'Тяжелая атлетика',
   CALORIES = 'Kalorie Killa',
+  HYROX = 'HYROX',
 }
 
 export enum AdminButtons {
@@ -220,6 +246,7 @@ export enum AdminButtons {
   ADMIN_CROSS_FIT = 'ADMIN_CROSS_FIT',
   ADMIN_HEALTHY_BACK = 'ADMIN_HEALTHY_BACK',
   ADMIN_CALORIES = 'ADMIN_CALORIES',
+  ADMIN_HYROX = 'ADMIN_HYROX',
 }
 
 export enum AdminButtonsText {
@@ -234,6 +261,7 @@ export enum AdminButtonsText {
   ADMIN_CROSS_FIT = 'Кроссфит',
   ADMIN_HEALTHY_BACK = 'Здоровая спина',
   ADMIN_CALORIES = 'Kalorie Killa',
+  ADMIN_HYROX = 'HYROX',
 }
 
 export enum WeightliftingButtons {

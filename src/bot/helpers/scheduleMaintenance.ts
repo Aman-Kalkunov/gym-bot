@@ -6,6 +6,7 @@ import {
   CALORIES_SCHEDULE,
   CROSS_FIT_SCHEDULE,
   HEALTHY_BACK_SCHEDULE,
+  HYROX_SCHEDULE,
   ITraining,
 } from '../../types/types';
 import { formatDate, getCapacity } from './helpers';
@@ -14,6 +15,7 @@ const SCHEDULE_BY_TYPE: Record<TrainingType, Record<number, string[]>> = {
   [TrainingType.CROSSFIT]: CROSS_FIT_SCHEDULE,
   [TrainingType.BACK]: HEALTHY_BACK_SCHEDULE,
   [TrainingType.CALORIES]: CALORIES_SCHEDULE,
+  [TrainingType.HYROX]: HYROX_SCHEDULE,
 };
 
 export const setupAutoUpdate = () => {
