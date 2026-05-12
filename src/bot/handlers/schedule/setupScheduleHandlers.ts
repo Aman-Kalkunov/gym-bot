@@ -5,6 +5,7 @@ import { scheduleButtons } from '../../keyboards/scheduleButtons';
 import { handleCalories } from './handleCalories';
 import { handleCrossfit } from './handleCrossfit';
 import { handleHealthyBack } from './handleHealthyBack';
+import { handleHyrox } from './handleHyrox';
 import { handleWeightlifting } from './handleWeightlifting';
 
 export const setupScheduleHandlers = (bot: Telegraf<Context>) => {
@@ -24,6 +25,11 @@ export const setupScheduleHandlers = (bot: Telegraf<Context>) => {
 
   bot.action(ScheduleButtons.CALORIES, async ctx => {
     await handleCalories(ctx, 'edit');
+    await ctx.answerCbQuery();
+  });
+
+  bot.action(ScheduleButtons.HYROX, async ctx => {
+    await handleHyrox(ctx, 'edit');
     await ctx.answerCbQuery();
   });
 

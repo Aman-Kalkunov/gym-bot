@@ -8,11 +8,18 @@ import {
   CrossfitTypes,
   CrossfitTypesText,
   HealthyBackTypes,
+  HYROXTypes,
   IBooking,
   MessageType,
   ScheduleButtonsText,
 } from '../../../types/types';
-import { getFormatDate, getUserName, safeEditOrReply } from '../../helpers/helpers';
+import {
+  getCancelQuestion,
+  getCancelText,
+  getFormatDate,
+  getUserName,
+  safeEditOrReply,
+} from '../../helpers/helpers';
 
 export const handleMyBookings = async (ctx: Context, messageType: MessageType) => {
   const user = ctx.from;
@@ -34,6 +41,7 @@ export const handleMyBookings = async (ctx: Context, messageType: MessageType) =
   const crossfitRows: InlineKeyboardButton[][] = [];
   const healthyBackRows: InlineKeyboardButton[][] = [];
   const caloriesRows: InlineKeyboardButton[][] = [];
+  const hyroxRows: InlineKeyboardButton[][] = [];
 
   bookings.forEach(b => {
     const { id, training } = b;
@@ -69,6 +77,15 @@ export const handleMyBookings = async (ctx: Context, messageType: MessageType) =
         ),
       ]);
     }
+
+    if (training.type === TrainingType.HYROX) {
+      hyroxRows.push([
+        Markup.button.callback(
+          `${dateStr} — ${training.time}`,
+          `${HYROXTypes.HYROX_BOOKING}_${id}`,
+        ),
+      ]);
+    }
   });
 
   const buttons: InlineKeyboardButton[][] = [];
@@ -86,6 +103,11 @@ export const handleMyBookings = async (ctx: Context, messageType: MessageType) =
   if (caloriesRows.length > 0) {
     buttons.push([Markup.button.callback(ScheduleButtonsText.CALORIES, 'NOOP')]);
     buttons.push(...caloriesRows);
+  }
+
+  if (hyroxRows.length > 0) {
+    buttons.push([Markup.button.callback(ScheduleButtonsText.HYROX, 'NOOP')]);
+    buttons.push(...hyroxRows);
   }
 
   buttons.push([Markup.button.callback(CrossfitTypesText.CLOSE, CrossfitTypes.CLOSE)]);
@@ -120,12 +142,11 @@ export const handleBookingInfo = async (ctx: Context, bookingId: number) => {
   }
 
   const date = getFormatDate(booking.training?.date);
-  const text =
-    booking.training?.type === TrainingType.CROSSFIT
-      ? `Вы уверены, что хотите удалить запись на CrossFit?\n\n${booking.training?.time} (${date})`
-      : booking.training?.type === TrainingType.BACK
-        ? `Вы уверены, что хотите удалить запись на тренировку Здоровая спина?\n\n${booking.training?.time} (${date})`
-        : `Вы уверены, что хотите удалить запись на тренировку Kalorie Killa?\n\n${booking.training?.time} (${date})`;
+  const text = getCancelQuestion(
+    booking.training?.type ?? 'CROSSFIT',
+    booking.training?.time ?? '',
+    date,
+  );
 
   await ctx.editMessageText(
     text,
@@ -168,13 +189,7 @@ export const handleCancelBooking = async (ctx: Context, bookingId: number, admin
 
   if (user) {
     const userName = getUserName(user);
-
-    const msg =
-      booking.training?.type === TrainingType.CROSSFIT
-        ? `${userName} отменил(-а) запись на CrossFit: ${time} (${date})`
-        : booking.training?.type === TrainingType.BACK
-          ? `${userName} отменил(-а) запись на тренировку Здоровая спина: ${time} (${date})`
-          : `${userName} отменил(-а) запись на тренировку Kalorie Killa: ${time} (${date})`;
+    const msg = getCancelText(booking.training?.type ?? 'CROSSFIT', userName, time, date);
 
     try {
       await ctx.telegram.sendMessage(adminId, msg);

@@ -3,6 +3,7 @@ import {
   CaloriesTypes,
   CrossfitTypes,
   HealthyBackTypes,
+  HYROXTypes,
   Route,
   WeightliftingButtons,
 } from '../../types/types';
@@ -50,6 +51,7 @@ import {
   handleHealthyBackDay,
   handleHealthyBackTime,
 } from '../handlers/schedule/handleHealthyBack';
+import { handleHyrox, handleHyroxDay, handleHyroxTime } from '../handlers/schedule/handleHyrox';
 import { handleWeightliftingDay } from '../handlers/schedule/handleWeightlifting';
 import { isValidType } from '../helpers/helpers';
 
@@ -88,6 +90,14 @@ export const routes: Route[] = [
   },
 
   {
+    match: d => d === HYROXTypes.HYROX_TIME_BACK,
+    handler: async ctx => {
+      await handleHyrox(ctx, 'edit');
+      await ctx.answerCbQuery();
+    },
+  },
+
+  {
     match: d => d === CrossfitTypes.CROSS_FIT_DAY_BACK,
     handler: async ctx => {
       await ctx.editMessageText('Выберите тип тренировки', scheduleButtons);
@@ -112,6 +122,14 @@ export const routes: Route[] = [
   },
 
   {
+    match: d => d === HYROXTypes.HYROX_DAY_BACK,
+    handler: async ctx => {
+      await ctx.editMessageText('Выберите тип тренировки', scheduleButtons);
+      await ctx.answerCbQuery();
+    },
+  },
+
+  {
     match: d => d === CrossfitTypes.CROSS_FIT_MY_BACK,
     handler: async ctx => {
       await handleMyBookings(ctx, 'edit');
@@ -122,7 +140,7 @@ export const routes: Route[] = [
   // CROSSFIT — DAY
   {
     match: d => d.startsWith(`${CrossfitTypes.CROSS_FIT_DAY}_`),
-    handler: async (ctx, m) => {
+    handler: async ctx => {
       const day = Number(ctx.callbackQuery.data.split('_')[3]);
       if (Number.isNaN(day)) return ctx.answerCbQuery('Некорректный день');
       await handleCrossfitDay(ctx, day, 'edit');
@@ -133,7 +151,7 @@ export const routes: Route[] = [
   // HEALTHY — DAY
   {
     match: d => d.startsWith(`${HealthyBackTypes.HEALTHY_BACK_DAY}_`),
-    handler: async (ctx, m) => {
+    handler: async ctx => {
       const day = Number(ctx.callbackQuery.data.split('_')[3]);
       if (Number.isNaN(day)) return ctx.answerCbQuery('Некорректный день');
       await handleHealthyBackDay(ctx, day, 'edit');
@@ -144,10 +162,21 @@ export const routes: Route[] = [
   // CALORIES — DAY
   {
     match: d => d.startsWith(`${CaloriesTypes.CALORIES_DAY}_`),
-    handler: async (ctx, m) => {
+    handler: async ctx => {
       const day = Number(ctx.callbackQuery.data.split('_')[2]);
       if (Number.isNaN(day)) return ctx.answerCbQuery('Некорректный день');
       await handleCaloriesDay(ctx, day, 'edit');
+      await ctx.answerCbQuery();
+    },
+  },
+
+  // HYROX — DAY
+  {
+    match: d => d.startsWith(`${HYROXTypes.HYROX_DAY}_`),
+    handler: async ctx => {
+      const day = Number(ctx.callbackQuery.data.split('_')[2]);
+      if (Number.isNaN(day)) return ctx.answerCbQuery('Некорректный день');
+      await handleHyroxDay(ctx, day, 'edit');
       await ctx.answerCbQuery();
     },
   },
@@ -185,6 +214,17 @@ export const routes: Route[] = [
     },
   },
 
+  // HYROX — TIME
+  {
+    match: d => d.startsWith(`${HYROXTypes.HYROX_TIME}_`),
+    handler: async ctx => {
+      const trainingId = Number(ctx.callbackQuery.data.split('_')[2]);
+      if (Number.isNaN(trainingId)) return ctx.answerCbQuery('Некорректное время');
+      await handleHyroxTime(ctx, trainingId, process.env.ADMIN_ID!);
+      await ctx.answerCbQuery();
+    },
+  },
+
   // BOOKING INFO / CANCEL
   {
     match: d => d.startsWith(`${CrossfitTypes.CROSS_FIT_BOOKING}_`),
@@ -212,6 +252,18 @@ export const routes: Route[] = [
 
   {
     match: d => d.startsWith(`${CaloriesTypes.CALORIES_BOOKING}_`),
+    handler: async ctx => {
+      const id = Number(ctx.callbackQuery.data.split('_')[2]);
+      if (Number.isNaN(id)) {
+        return ctx.answerCbQuery('Ошибка');
+      }
+      await handleBookingInfo(ctx, id);
+      await ctx.answerCbQuery();
+    },
+  },
+
+  {
+    match: d => d.startsWith(`${HYROXTypes.HYROX_BOOKING}_`),
     handler: async ctx => {
       const id = Number(ctx.callbackQuery.data.split('_')[2]);
       if (Number.isNaN(id)) {

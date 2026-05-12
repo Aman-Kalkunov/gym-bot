@@ -11,6 +11,7 @@ import {
   BACK_CAPACITY as backCapacity,
   CALORIES_CAPACITY as caloriesCapacity,
   CAPACITY as capacity,
+  HYROX_CAPACITY as hyroxCapacity,
 } from '../../types/types';
 
 export const sayHello = () => async (ctx: Context) => {
@@ -106,8 +107,39 @@ export const getCapacity = (type: TrainingType) => {
     return caloriesCapacity;
   }
 
+  if (type === 'HYROX') {
+    return hyroxCapacity;
+  }
+
   return capacity;
 };
 
+export const getCancelQuestion = (type: TrainingType, time: string, date: string) => {
+  const cancelText =
+    type === TrainingType.CROSSFIT
+      ? `Вы уверены, что хотите удалить запись на CrossFit?\n\n${time} (${date})`
+      : type === TrainingType.BACK
+        ? `Вы уверены, что хотите удалить запись на тренировку Здоровая спина?\n\n${time} (${date})`
+        : type === TrainingType.HYROX
+          ? `Вы уверены, что хотите удалить запись на тренировку Hyrox?\n\n${time} (${date})`
+          : `Вы уверены, что хотите удалить запись на тренировку Kalorie Killa?\n\n${time} (${date})`;
+  return cancelText;
+};
+
+export const getCancelText = (type: TrainingType, userName: string, time: string, date: string) => {
+  const cancelText =
+    type === TrainingType.CROSSFIT
+      ? `${userName} отменил(-а) запись на CrossFit: ${time} (${date})`
+      : type === TrainingType.BACK
+        ? `${userName} отменил(-а) запись на тренировку Здоровая спина: ${time} (${date})`
+        : type === TrainingType.HYROX
+          ? `${userName} отменил(-а) запись на тренировку Hyrox: ${time} (${date})`
+          : `${userName} отменил(-а) запись на тренировку Kalorie Killa: ${time} (${date})`;
+  return cancelText;
+};
+
 export const isValidType = (type: TrainingType) =>
-  type === TrainingType.CROSSFIT || type === TrainingType.BACK || type === TrainingType.CALORIES;
+  type === TrainingType.CROSSFIT ||
+  type === TrainingType.BACK ||
+  type === TrainingType.CALORIES ||
+  type === TrainingType.HYROX;

@@ -24,4 +24,9 @@ export const setupAdminHandlers = (bot: Telegraf<Context>) => {
     await handleAdminSchedule(ctx, TrainingType.CALORIES);
     await ctx.answerCbQuery();
   });
+
+  bot.action(AdminButtons.ADMIN_HYROX, async ctx => {
+    await handleAdminSchedule(ctx, TrainingType.HYROX);
+    await ctx.answerCbQuery();
+  });
 };
