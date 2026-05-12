@@ -3,7 +3,7 @@ import { TrainingType } from '@prisma/client';
 export const CAPACITY = 12;
 export const BACK_CAPACITY = 10;
 export const CALORIES_CAPACITY = 20;
-export const HYROX_CAPACITY = 10;
+export const HYROX_CAPACITY = 12;
 
 export enum BotCommand {
   INFO = 'info',
